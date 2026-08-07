@@ -36,12 +36,38 @@ const EggManagement = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [eggRes, batchRes] = await Promise.all([
+      const [eggRes, batchRes, henRes] = await Promise.all([
         api.get('/eggs'),
-        api.get('/batches')
+        api.get('/batches'),
+        api.get('/hens')
       ]);
-      setEntries(eggRes.data);
-      setActiveBatches(batchRes.data.filter(b => b.status === 'Active'));
+      
+      const batches = batchRes.data;
+      const henDeaths = henRes.data;
+
+      // Dynamically calculate historical aliveHens and production % for each date
+      const dynamicEntries = eggRes.data.map(entry => {
+        const batch = batches.find(b => b.name === entry.name);
+        if (batch) {
+          const entryDate = new Date(entry.date).toISOString().split('T')[0];
+          // Sum all deaths for this batch up to the entry date
+          const deathsUpToDate = henDeaths.filter(d => 
+            d.batchId === batch._id && new Date(d.date).toISOString().split('T')[0] <= entryDate
+          );
+          const totalDead = deathsUpToDate.reduce((sum, d) => sum + d.deadToday, 0);
+          const aliveHensOnDate = batch.startedHens - totalDead;
+          
+          return {
+            ...entry,
+            aliveHens: aliveHensOnDate > 0 ? aliveHensOnDate : 0,
+            productionPercentage: aliveHensOnDate > 0 ? (entry.eggsProduced / aliveHensOnDate) * 100 : 0
+          };
+        }
+        return entry;
+      });
+
+      setEntries(dynamicEntries);
+      setActiveBatches(batches.filter(b => b.status === 'Active'));
     } catch (error) {
       toast.error('Failed to load records');
     } finally {
