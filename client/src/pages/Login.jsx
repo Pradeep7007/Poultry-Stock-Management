@@ -15,7 +15,7 @@ const Login = ({ onLogin }) => {
 
     setTimeout(() => {
       setIsLoading(false);
-      if (username === 'pms' && password === '26082006') {
+      if (username === 'pms' && password === '26082006' || username === 'pradeep' && password === '2006') {
         toast.success('Sign in successful!');
         onLogin();
       } else {
@@ -85,7 +85,7 @@ const Login = ({ onLogin }) => {
               <input 
                 type="text" 
                 className="form-control-modern w-100" 
-                placeholder="Enter 'pms'"
+                placeholder="Enter Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required

@@ -6,9 +6,10 @@ const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
     <header className="sticky-top bg-surface border-bottom d-flex justify-content-between align-items-center px-4 py-3" style={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--border-color)', zIndex: 999 }}>
       <div className="d-flex align-items-center gap-3">
         <button 
-          className="btn btn-sm btn-light border-0 p-2 d-md-none" 
+          className="btn btn-sm btn-light border-0 p-2" 
           onClick={toggleSidebar}
           style={{ background: 'var(--bg-color)', color: 'var(--text-main)' }}
+          title="Toggle Sidebar"
         >
           <Menu size={20} />
         </button>

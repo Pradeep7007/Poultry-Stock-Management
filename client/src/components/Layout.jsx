@@ -3,19 +3,17 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 
 const Layout = ({ children, onLogout, toggleTheme, darkMode }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 992);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Close sidebar by default on smaller screens
   useEffect(() => {
     const handleResize = () => {
+      setWindowWidth(window.innerWidth);
       if (window.innerWidth < 992) {
         setIsSidebarOpen(false);
-      } else {
-        setIsSidebarOpen(true);
       }
     };
     
-    handleResize(); // Initial check
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -37,7 +35,14 @@ const Layout = ({ children, onLogout, toggleTheme, darkMode }) => {
         ></div>
       )}
 
-      <div className="main-content" style={{ marginLeft: isSidebarOpen && window.innerWidth >= 992 ? '260px' : '0' }}>
+      <div 
+        className="main-content" 
+        style={{ 
+          marginLeft: isSidebarOpen && windowWidth >= 992 ? '260px' : '0',
+          transition: 'margin-left 0.3s ease',
+          minHeight: '100vh'
+        }}
+      >
         <Header toggleSidebar={toggleSidebar} toggleTheme={toggleTheme} darkMode={darkMode} />
         <main className="content-area">
           {children}
