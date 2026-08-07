@@ -305,65 +305,56 @@ const EggManagement = () => {
           </div>
         </div>
 
-        <div className="row g-4 mt-2">
-          {loading ? (
-            <div className="col-12 text-center py-5"><div className="spinner-border text-primary"></div></div>
-          ) : currentTableData.length > 0 ? (
-            currentTableData.map(entry => (
-              <div className="col-12 col-md-6 col-xl-4" key={entry._id}>
-                <div className="card border-0 shadow-sm h-100 hover-elevate transition-all">
-                  <div className="card-header bg-transparent border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
-                    <div 
-                      className="text-primary fw-bold d-flex align-items-center gap-2 text-decoration-underline" 
-                      style={{ cursor: 'pointer' }} 
-                      onClick={() => setSelectedRecord(entry)}
-                      title="Click to view full details"
-                    >
-                      <Calendar size={16} />
-                      {formatDate(entry.date)}
+        <div className="table-responsive">
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('date')}>Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
+                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>Batch {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
+                <th className="text-end">Alive Hens</th>
+                <th className="text-end">Produced</th>
+                <th className="text-end">Production %</th>
+                <th className="text-end">Total Profit (₹)</th>
+                <th className="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="7" className="text-center py-5"><div className="spinner-border text-primary"></div></td></tr>
+              ) : currentTableData.length > 0 ? (
+                currentTableData.map(entry => (
+                  <tr key={entry._id}>
+                    <td className="text-primary text-decoration-underline" style={{ cursor: 'pointer' }} onClick={() => setSelectedRecord(entry)}>{formatDate(entry.date)}</td>
+                    <td className="fw-medium text-primary">{entry.name}</td>
+                    <td className="text-end fw-medium">{entry.aliveHens?.toLocaleString() || '-'}</td>
+                    <td className="text-end fw-medium">{entry.eggsProduced?.toLocaleString()}</td>
+                    <td className="text-end fw-bold text-success">{entry.productionPercentage ? entry.productionPercentage.toFixed(2) : '0.00'}%</td>
+                    <td className="text-end fw-bold text-warning">₹{(entry.profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td className="text-end">
+                      <div className="d-flex justify-content-end gap-2">
+                        <button className="btn btn-sm btn-light border p-1 rounded d-flex align-items-center text-secondary" onClick={() => handleEdit(entry)} title="Edit">
+                          <Edit2 size={16} />
+                        </button>
+                        <button className="btn btn-sm btn-light border p-1 rounded d-flex align-items-center text-danger" onClick={() => handleDelete(entry._id)} title="Delete">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center py-5">
+                    <div className="d-flex flex-column align-items-center text-muted">
+                      <AlertCircle size={40} className="mb-3 opacity-50" />
+                      <h5>No records found</h5>
+                      <p className="small mb-0">Try adjusting your search criteria or add a new record.</p>
                     </div>
-                    <span className="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-3 py-2">
-                      {entry.name}
-                    </span>
-                  </div>
-                  <div className="card-body px-4 py-3">
-                    <div className="d-flex justify-content-between mb-2">
-                      <span className="text-muted small fw-medium">Alive Hens</span>
-                      <span className="fw-semibold text-dark">{entry.aliveHens?.toLocaleString() || '-'}</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span className="text-muted small fw-medium">Eggs Produced</span>
-                      <span className="fw-semibold text-dark">{entry.eggsProduced?.toLocaleString()}</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span className="text-muted small fw-medium">Production %</span>
-                      <span className="fw-bold text-success">{entry.productionPercentage ? entry.productionPercentage.toFixed(2) : '0.00'}%</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-0">
-                      <span className="text-muted small fw-medium">Total Profit</span>
-                      <span className="fw-bold text-warning">₹{(entry.profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                    </div>
-                  </div>
-                  <div className="card-footer bg-transparent border-top px-4 py-3 d-flex justify-content-end gap-2">
-                    <button className="btn btn-sm btn-light border text-secondary d-flex align-items-center gap-1" onClick={() => handleEdit(entry)} title="Edit">
-                      <Edit2 size={16} /> Edit
-                    </button>
-                    <button className="btn btn-sm btn-light border text-danger d-flex align-items-center gap-1" onClick={() => handleDelete(entry._id)} title="Delete">
-                      <Trash2 size={16} /> Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-12 text-center py-5">
-              <div className="d-flex flex-column align-items-center text-muted">
-                <AlertCircle size={40} className="mb-3 opacity-50" />
-                <h5>No records found</h5>
-                <p className="small mb-0">Try adjusting your search criteria or add a new record.</p>
-              </div>
-            </div>
-          )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         {totalPages > 1 && (

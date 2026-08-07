@@ -350,94 +350,48 @@ const HenManagement = () => {
               </div>
             </div>
 
-            <div className="row g-3 p-3 mt-0 mb-3" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-              {loading ? (
-                <div className="col-12 text-center py-5"><div className="spinner-border text-primary"></div></div>
-              ) : tableData.length > 0 ? (
-                tableData.map(item => (
-                  <div className="col-12 col-md-6" key={item._id}>
-                    <div className="card border-0 shadow-sm h-100 hover-elevate transition-all">
-                      {activeTab === 0 ? (
-                        <>
-                          <div className="card-header bg-transparent border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-                            <div 
-                              className="text-primary fw-bold d-flex align-items-center gap-2 text-decoration-underline" 
-                              style={{ cursor: 'pointer' }} 
-                              onClick={() => setSelectedRecord({...item, isBatch: true})}
-                              title="Click to view full details"
-                            >
-                              <Calendar size={14} />
-                              {formatDate(item.startDate)}
-                            </div>
-                            <span className={`badge badge-modern badge-${item.status === 'Active' ? 'success' : 'secondary'} px-2 py-1`}>
-                              {item.status}
-                            </span>
+            <div className="table-responsive flex-grow-1">
+              <table className="modern-table">
+                <thead>
+                  {activeTab === 0 ? (
+                    <tr>
+                      <th>Batch Name</th><th>Start</th><th>End</th><th>Started</th><th>Alive</th><th>Status</th><th>Actions</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th>Name</th><th>Date</th><th>Dead Today</th><th>Entered By</th><th className="text-end">Actions</th>
+                    </tr>
+                  )}
+                </thead>
+                <tbody>
+                  {loading ? <tr><td colSpan="7" className="text-center py-4"><div className="spinner-border text-primary"></div></td></tr> : tableData.length > 0 ? tableData.map(item => (
+                    activeTab === 0 ? (
+                      <tr key={item._id}>
+                        <td className="fw-bold">{item.name}</td>
+                        <td className="text-primary text-decoration-underline" style={{ cursor: 'pointer' }} onClick={() => setSelectedRecord({...item, isBatch: true})}>{formatDate(item.startDate)}</td>
+                        <td className="text-muted">{formatDate(item.endDate)}</td>
+                        <td>{item.startedHens?.toLocaleString()}</td>
+                        <td>{item.aliveHens?.toLocaleString()}</td>
+                        <td><span className={`badge-modern badge-${item.status === 'Active' ? 'success' : 'secondary'}`}>{item.status}</span></td>
+                        <td><button className="btn btn-sm btn-light text-danger" onClick={() => handleDelete(item._id, 'batch')}><Trash2 size={16}/></button></td>
+                      </tr>
+                    ) : (
+                      <tr key={item._id}>
+                        <td className="fw-medium">{item.name}</td>
+                        <td className="text-primary text-decoration-underline" style={{ cursor: 'pointer' }} onClick={() => setSelectedRecord({...item, isMortality: true})}>{formatDate(item.date)}</td>
+                        <td><span className="badge-modern badge-danger">{item.deadToday}</span></td>
+                        <td>{item.enteredBy || '-'}</td>
+                        <td className="text-end">
+                          <div className="d-flex justify-content-end gap-2">
+                            <button className="btn btn-sm btn-light text-primary me-2" onClick={() => handleEdit(item)}><Edit2 size={16}/></button>
+                            <button className="btn btn-sm btn-light text-danger" onClick={() => handleDelete(item._id, 'death')}><Trash2 size={16}/></button>
                           </div>
-                          <div className="card-body px-3 py-2">
-                            <div className="d-flex justify-content-between mb-1">
-                              <span className="text-muted small fw-medium">Batch Name</span>
-                              <span className="fw-bold text-dark small">{item.name}</span>
-                            </div>
-                            <div className="d-flex justify-content-between mb-1">
-                              <span className="text-muted small fw-medium">Started Hens</span>
-                              <span className="fw-semibold text-primary small">{item.startedHens?.toLocaleString()}</span>
-                            </div>
-                            <div className="d-flex justify-content-between mb-0">
-                              <span className="text-muted small fw-medium">Alive Hens</span>
-                              <span className="fw-bold text-success small">{item.aliveHens?.toLocaleString()}</span>
-                            </div>
-                          </div>
-                          <div className="card-footer bg-transparent border-top px-3 py-2 d-flex justify-content-end gap-2">
-                            <button className="btn btn-sm btn-light border py-1 text-danger d-flex align-items-center gap-1" onClick={() => handleDelete(item._id, 'batch')} title="Delete">
-                              <Trash2 size={14} /> Delete
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="card-header bg-transparent border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-                            <div 
-                              className="text-danger fw-bold d-flex align-items-center gap-2 text-decoration-underline" 
-                              style={{ cursor: 'pointer' }} 
-                              onClick={() => setSelectedRecord({...item, isMortality: true})}
-                              title="Click to view full details"
-                            >
-                              <Calendar size={14} />
-                              {formatDate(item.date)}
-                            </div>
-                            <span className="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-2 py-1">
-                              {item.name}
-                            </span>
-                          </div>
-                          <div className="card-body px-3 py-2">
-                            <div className="d-flex justify-content-between mb-1">
-                              <span className="text-muted small fw-medium">Dead Today</span>
-                              <span className="fw-bold text-danger small">{item.deadToday} Hens</span>
-                            </div>
-                            <div className="d-flex justify-content-between mb-0">
-                              <span className="text-muted small fw-medium">Entered By</span>
-                              <span className="fw-semibold text-dark small">{item.enteredBy || '-'}</span>
-                            </div>
-                          </div>
-                          <div className="card-footer bg-transparent border-top px-3 py-2 d-flex justify-content-end gap-2">
-                            <button className="btn btn-sm btn-light border py-1 text-secondary d-flex align-items-center gap-1" onClick={() => handleEdit(item)} title="Edit">
-                              <Edit2 size={14} /> Edit
-                            </button>
-                            <button className="btn btn-sm btn-light border py-1 text-danger d-flex align-items-center gap-1" onClick={() => handleDelete(item._id, 'death')} title="Delete">
-                              <Trash2 size={14} /> Delete
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-12 text-center py-4 text-muted">
-                  <AlertCircle size={32} className="opacity-50 mb-2" />
-                  <p className="mb-0">No records found.</p>
-                </div>
-              )}
+                        </td>
+                      </tr>
+                    )
+                  )) : <tr><td colSpan="7" className="text-center py-4 text-muted"><AlertCircle size={32} className="opacity-50 mb-2" /><p className="mb-0">No records found.</p></td></tr>}
+                </tbody>
+              </table>
             </div>
             
             {/* Pagination */}

@@ -238,7 +238,7 @@ const VaccineManagement = () => {
           { title: 'Total Treatment Cost', value: `₹${totalTreatmentCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'danger' },
           { title: 'Cost Per Hen', value: `₹${costPerHen}`, icon: <Activity size={20} />, color: 'secondary' }
         ].map((stat, idx) => (
-          <div className="col-6 col-md-4 col-xl-2 flex-grow-1" key={idx}>
+          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
             <div className="saas-card p-3 h-100 d-flex align-items-center gap-3">
               <div className={`text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle p-3`}>{stat.icon}</div>
               <div><p className="text-muted small fw-semibold m-0 text-uppercase">{stat.title}</p><h5 className="fw-bold m-0">{stat.value}</h5></div>
@@ -344,59 +344,30 @@ const VaccineManagement = () => {
               </div>
             </div>
 
-            <div className="row g-3 p-3 mt-0 mb-3" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-              {loading ? (
-                <div className="col-12 text-center py-5"><div className="spinner-border text-primary"></div></div>
-              ) : tableData.length > 0 ? (
-                tableData.map(item => (
-                  <div className="col-12 col-md-6" key={item._id}>
-                    <div className="card border-0 shadow-sm h-100 hover-elevate transition-all">
-                      <div className="card-header bg-transparent border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-                        <div 
-                          className="text-primary fw-bold d-flex align-items-center gap-2 text-decoration-underline" 
-                          style={{ cursor: 'pointer' }} 
-                          onClick={() => setSelectedRecord(item)}
-                          title="Click to view full details"
-                        >
-                          <Calendar size={14} />
-                          {formatDate(item.date)}
+            <div className="table-responsive flex-grow-1">
+              <table className="modern-table">
+                <thead>
+                  <tr><th>Date</th><th>Type</th><th>Name</th><th>Dosage</th><th>Quantity</th><th>Cost</th><th className="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                  {loading ? <tr><td colSpan="7" className="text-center py-4"><div className="spinner-border text-primary"></div></td></tr> : tableData.length > 0 ? tableData.map(item => (
+                    <tr key={item._id}>
+                      <td className="text-primary text-decoration-underline" style={{ cursor: 'pointer' }} onClick={() => setSelectedRecord(item)}>{formatDate(item.date)}</td>
+                      <td><span className={`badge-modern badge-${item.type === 'Vaccine' ? 'success' : 'primary'}`}>{item.type}</span></td>
+                      <td className="fw-medium">{item.medicineName}</td>
+                      <td>{item.dosage}</td>
+                      <td>{item.quantity}</td>
+                      <td className="fw-bold text-danger">₹{item.cost}</td>
+                      <td className="text-end">
+                        <div className="d-flex justify-content-end gap-2">
+                          <button className="btn btn-sm btn-light text-primary me-2" onClick={() => handleEdit(item)}><Edit2 size={16}/></button>
+                          <button className="btn btn-sm btn-light text-danger" onClick={() => handleDelete(item._id)}><Trash2 size={16}/></button>
                         </div>
-                        <span className={`badge bg-${item.type === 'Vaccine' ? 'success' : 'primary'} bg-opacity-10 text-${item.type === 'Vaccine' ? 'success' : 'primary'} border border-${item.type === 'Vaccine' ? 'success' : 'primary'} rounded-pill px-2 py-1`}>
-                          {item.type}
-                        </span>
-                      </div>
-                      <div className="card-body px-3 py-2">
-                        <h6 className="fw-bold text-dark mb-2">{item.medicineName}</h6>
-                        <div className="d-flex justify-content-between mb-1">
-                          <span className="text-muted small fw-medium">Dosage</span>
-                          <span className="fw-semibold text-dark small">{item.dosage}</span>
-                        </div>
-                        <div className="d-flex justify-content-between mb-1">
-                          <span className="text-muted small fw-medium">Quantity</span>
-                          <span className="fw-semibold text-dark small">{item.quantity}</span>
-                        </div>
-                        <div className="d-flex justify-content-between mb-0">
-                          <span className="text-muted small fw-medium">Cost</span>
-                          <span className="fw-bold text-danger small">₹{item.cost}</span>
-                        </div>
-                      </div>
-                      <div className="card-footer bg-transparent border-top px-3 py-2 d-flex justify-content-end gap-2">
-                        <button className="btn btn-sm btn-light border py-1 text-secondary d-flex align-items-center gap-1" onClick={() => handleEdit(item)} title="Edit">
-                          <Edit2 size={14} /> Edit
-                        </button>
-                        <button className="btn btn-sm btn-light border py-1 text-danger d-flex align-items-center gap-1" onClick={() => handleDelete(item._id)} title="Delete">
-                          <Trash2 size={14} /> Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-12 text-center py-4 text-muted">
-                  <AlertCircle size={32} className="opacity-50 mb-2" />
-                  <p className="mb-0">No records found.</p>
-                </div>
-              )}
+                      </td>
+                    </tr>
+                  )) : <tr><td colSpan="7" className="text-center py-4 text-muted"><AlertCircle size={32} className="opacity-50 mb-2" /><p className="mb-0">No records found.</p></td></tr>}
+                </tbody>
+              </table>
             </div>
             
             {totalPages > 1 && (
