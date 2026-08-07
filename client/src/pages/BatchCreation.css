@@ -1,0 +1,97 @@
+/* Modern SaaS-like Styling for Batch Creation */
+.batch-creation-wrapper {
+  background-color: var(--light-bg);
+  min-height: calc(100vh - 80px);
+}
+
+body.dark-mode .batch-creation-wrapper {
+  background-color: var(--dark-bg);
+}
+
+.modern-card {
+  background-color: var(--light-card);
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .modern-card {
+  background-color: var(--dark-card);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.modern-card .card-header {
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+body.dark-mode .modern-card .card-header {
+  background-color: var(--dark-card) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+body.dark-mode .modern-card h2 {
+  color: #fff !important;
+}
+
+/* Input Fields */
+.modern-input {
+  background-color: #f8f9fc;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  color: #333;
+  transition: all 0.2s ease-in-out;
+  padding: 0.75rem 1.25rem;
+}
+
+.modern-input:focus {
+  background-color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+  outline: 0;
+}
+
+body.dark-mode .modern-input {
+  background-color: rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.1);
+  color: #e9ecef;
+}
+
+body.dark-mode .modern-input:focus {
+  background-color: rgba(0,0,0,0.3);
+  border-color: var(--primary-color);
+}
+
+/* Modern Buttons */
+.modern-btn {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.modern-btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  color: white;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.2);
+}
+
+.modern-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+  opacity: 0.95;
+}
+
+body.dark-mode .btn-light {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e9ecef !important;
+}
+
+body.dark-mode .btn-light:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Alert Styling for Dark Mode */
+body.dark-mode .alert-primary {
+  background-color: rgba(67, 97, 238, 0.15) !important;
+}
+body.dark-mode .alert-primary .text-primary-emphasis {
+  color: #9ab0ff !important;
+}
