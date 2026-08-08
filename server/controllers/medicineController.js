@@ -8,7 +8,7 @@ const { formatText, formatDate } = require('../utils/formatter');
 // @access  Public
 const createMedicineEntry = async (req, res) => {
   try {
-    const { name, date, type, medicineName, dosage, quantity, cost, notes, enteredBy } = req.body;
+    const { name, date, type, medicineName, dosage, quantity, unitType, cost, notes, enteredBy } = req.body;
 
     // Find active batch
     const activeBatch = await Batch.findOne({ status: 'Active' });
@@ -24,6 +24,7 @@ const createMedicineEntry = async (req, res) => {
       medicineName: formatText(medicineName),
       dosage: formatText(dosage),
       quantity: Number(quantity),
+      unitType: unitType ? formatText(unitType) : 'Packet',
       cost: Number(cost),
       notes: notes ? formatText(notes) : '',
       enteredBy: formatText(enteredBy)
@@ -41,7 +42,8 @@ const createMedicineEntry = async (req, res) => {
       entry.notes,
       entry.batchId.toString(),
       formatDate(entry.createdAt),
-      entry.enteredBy
+      entry.enteredBy,
+      entry.unitType || 'Packet'
     ];
 
     const sheetResult = await appendToSheet(sheetData, 496930642);
@@ -81,6 +83,7 @@ const updateMedicineEntry = async (req, res) => {
       entry.medicineName = req.body.medicineName ? formatText(req.body.medicineName) : entry.medicineName;
       entry.dosage = req.body.dosage ? formatText(req.body.dosage) : entry.dosage;
       entry.quantity = req.body.quantity || entry.quantity;
+      entry.unitType = req.body.unitType ? formatText(req.body.unitType) : entry.unitType;
       entry.cost = req.body.cost || entry.cost;
       entry.notes = req.body.notes !== undefined ? formatText(req.body.notes) : entry.notes;
       entry.enteredBy = req.body.enteredBy ? formatText(req.body.enteredBy) : entry.enteredBy;

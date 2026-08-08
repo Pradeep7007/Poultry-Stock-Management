@@ -25,7 +25,7 @@ const VaccineManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     id: '', date: new Date().toISOString().split('T')[0], type: 'Medicine',
-    medicineName: '', dosage: '', quantity: '', cost: '', notes: '', enteredBy: ''
+    medicineName: '', dosage: '', quantity: '', unitType: 'Packet', cost: '', notes: '', enteredBy: ''
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,7 +57,7 @@ const VaccineManagement = () => {
   const handleResetForm = () => {
     setFormData({ 
       id: '', date: new Date().toISOString().split('T')[0], type: 'Medicine',
-      medicineName: '', dosage: '', quantity: '', cost: '', notes: '', enteredBy: '' 
+      medicineName: '', dosage: '', quantity: '', unitType: 'Packet', cost: '', notes: '', enteredBy: '' 
     });
     setIsEditing(false);
     setShowForm(false);
@@ -78,6 +78,7 @@ const VaccineManagement = () => {
         medicineName: formData.medicineName,
         dosage: formData.dosage,
         quantity: Number(formData.quantity),
+        unitType: formData.unitType,
         cost: Number(formData.cost),
         notes: formData.notes,
         enteredBy: formData.enteredBy
@@ -102,7 +103,7 @@ const VaccineManagement = () => {
     setFormData({
       id: entry._id, date: new Date(entry.date).toISOString().split('T')[0], 
       type: entry.type, medicineName: entry.medicineName, dosage: entry.dosage, 
-      quantity: entry.quantity, cost: entry.cost, notes: entry.notes || '', enteredBy: entry.enteredBy || ''
+      quantity: entry.quantity, unitType: entry.unitType || 'Packet', cost: entry.cost, notes: entry.notes || '', enteredBy: entry.enteredBy || ''
     });
     setIsEditing(true);
     setShowForm(true);
@@ -147,7 +148,7 @@ const VaccineManagement = () => {
 
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(searchedData.map(e => ({
-      ...e, date: formatDate(e.date)
+      ...e, date: formatDate(e.date), quantity: `${e.quantity} ${e.unitType || ''}`
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Treatments");
@@ -157,9 +158,9 @@ const VaccineManagement = () => {
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("Treatment Management Report", 14, 15);
-    const tableColumn = ["Date", "Type", "Name", "Dosage", "Qty", "Cost(Rs)", "Entered By"];
+    const tableColumn = ["Date", "Type", "Name", "Dosage", "Qty", "Unit", "Cost(Rs)", "Entered By"];
     const tableRows = searchedData.map(e => [
-      formatDate(e.date), e.type, e.medicineName, e.dosage, e.quantity, e.cost, e.enteredBy
+      formatDate(e.date), e.type, e.medicineName, e.dosage, e.quantity, e.unitType || '', e.cost, e.enteredBy
     ]);
     doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
     doc.save("Treatment_Records.pdf");
@@ -278,7 +279,13 @@ const VaccineManagement = () => {
               </div>
               <div className="col-md-2">
                 <label className="form-label small fw-semibold text-muted">Quantity <span className="text-danger">*</span></label>
-                <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="quantity" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} required />
+                <div className="input-group">
+                  <input type="number" min="1" step="1" className="form-control-modern w-50" name="quantity" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} required />
+                  <select className="form-select form-control-modern w-50" name="unitType" value={formData.unitType} onChange={e => setFormData({...formData, unitType: e.target.value})} required style={{ borderLeft: 'none' }}>
+                    <option value="Packet">Packet</option>
+                    <option value="Bottle">Bottle</option>
+                  </select>
+                </div>
               </div>
               <div className="col-md-2">
                 <label className="form-label small fw-semibold text-muted">Total Cost (₹) <span className="text-danger">*</span></label>
@@ -349,7 +356,7 @@ const VaccineManagement = () => {
             <div className="table-responsive flex-grow-1">
               <table className="modern-table">
                 <thead>
-                  <tr><th>Date</th><th>Type</th><th>Name</th><th>Dosage</th><th>Quantity</th><th>Cost</th><th className="text-end">Actions</th></tr>
+                  <tr><th>Date</th><th>Type</th><th>Name</th><th>Dosage</th><th>Quantity</th><th>Unit</th><th>Cost</th><th className="text-end">Actions</th></tr>
                 </thead>
                 <tbody>
                   {loading ? <tr><td colSpan="7" className="text-center py-4"><div className="spinner-border text-primary"></div></td></tr> : tableData.length > 0 ? tableData.map(item => (
@@ -359,6 +366,7 @@ const VaccineManagement = () => {
                       <td className="fw-medium">{item.medicineName}</td>
                       <td>{item.dosage}</td>
                       <td>{item.quantity}</td>
+                      <td>{item.unitType || '-'}</td>
                       <td className="fw-bold text-danger">₹{item.cost}</td>
                       <td className="text-end">
                         <div className="d-flex justify-content-end gap-2">
@@ -433,7 +441,7 @@ const VaccineManagement = () => {
                       </div>
                       <div className="col-12 col-md-6">
                         <p className="text-muted small fw-semibold mb-1">Quantity</p>
-                        <h6 className="fw-bold m-0">{selectedRecord.quantity}</h6>
+                        <h6 className="fw-bold m-0">{selectedRecord.quantity} {selectedRecord.unitType || ''}</h6>
                       </div>
                       <div className="col-12 col-md-6">
                         <p className="text-muted small fw-semibold mb-1">Total Cost</p>

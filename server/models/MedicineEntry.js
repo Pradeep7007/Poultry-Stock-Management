@@ -30,7 +30,12 @@ const MedicineEntrySchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: true,
-    min: 0.01
+    min: 1
+  },
+  unitType: {
+    type: String,
+    enum: ['Packet', 'Bottle'],
+    default: 'Packet'
   },
   cost: {
     type: Number,
