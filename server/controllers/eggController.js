@@ -42,11 +42,8 @@ const createEggEntry = async (req, res) => {
 
     const productionPercentage = Number(((eggsProduced / batch.aliveHens) * 100).toFixed(2));
 
-    // Check stock
-    const allEntries = await EggEntry.find({});
-    const currentStock = allEntries.reduce((acc, curr) => acc + curr.eggsProduced - curr.eggsSold - (curr.damagedEggs || 0), 0);
-    if ((eggsSold + damagedEggs) > (currentStock + eggsProduced)) {
-      return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed available stock' });
+    if ((eggsSold + damagedEggs) > eggsProduced) {
+      return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed eggs produced today.' });
     }
 
     const salesAmount = eggsSold * eggPrice;
@@ -127,6 +124,13 @@ const updateEggEntry = async (req, res) => {
         return res.status(400).json({ message: 'Eggs Produced cannot exceed the Alive Hen Count.' });
       }
 
+      const eggsSold = req.body.eggsSold !== undefined ? Number(req.body.eggsSold) : entry.eggsSold;
+      const damagedEggs = req.body.damagedEggs !== undefined ? Number(req.body.damagedEggs) : (entry.damagedEggs || 0);
+
+      if ((eggsSold + damagedEggs) > eggsProduced) {
+        return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed eggs produced today.' });
+      }
+
       const productionPercentage = Number(((eggsProduced / aliveHens) * 100).toFixed(2));
 
       entry.name = formattedName;
@@ -134,8 +138,8 @@ const updateEggEntry = async (req, res) => {
       entry.aliveHens = aliveHens;
       entry.eggsProduced = eggsProduced;
       entry.productionPercentage = productionPercentage;
-      entry.eggsSold = req.body.eggsSold !== undefined ? Number(req.body.eggsSold) : entry.eggsSold;
-      entry.damagedEggs = req.body.damagedEggs !== undefined ? Number(req.body.damagedEggs) : (entry.damagedEggs || 0);
+      entry.eggsSold = eggsSold;
+      entry.damagedEggs = damagedEggs;
       entry.eggPrice = req.body.eggPrice !== undefined ? Number(req.body.eggPrice) : entry.eggPrice;
       entry.profitPerEgg = req.body.profitPerEgg !== undefined ? Number(req.body.profitPerEgg) : (entry.profitPerEgg || 0);
       entry.enteredBy = req.body.enteredBy ? formatText(req.body.enteredBy) : entry.enteredBy;

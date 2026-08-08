@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { 
+import {
   Plus, Edit2, Trash2, Search, Download, Printer, ChevronLeft, ChevronRight,
   TrendingUp, Calendar, AlertCircle, ShoppingBag, DollarSign
 } from 'lucide-react';
@@ -114,7 +114,7 @@ const FeedManagement = () => {
   const totalWeight = entries.reduce((acc, curr) => acc + curr.feedWeight, 0);
   const totalCost = entries.reduce((acc, curr) => acc + curr.feedCost, 0);
   const avgCostPerKg = totalWeight > 0 ? (totalCost / totalWeight).toFixed(2) : '0.00';
-  
+
   const totalEggs = eggEntries.reduce((acc, curr) => acc + curr.eggsProduced, 0);
   const feedCostPerEgg = totalEggs > 0 ? (totalCost / totalEggs).toFixed(2) : '0.00';
 
@@ -123,11 +123,11 @@ const FeedManagement = () => {
   const weightThisMonth = monthEntries.reduce((acc, curr) => acc + curr.feedWeight, 0);
 
   // --- Tables ---
-  const searchedData = entries.filter(e => 
-    e.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const searchedData = entries.filter(e =>
+    e.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (e.supplier && e.supplier.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  
+
   const totalPages = Math.ceil(searchedData.length / itemsPerPage) || 1;
   const tableData = searchedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -162,7 +162,7 @@ const FeedManagement = () => {
       grouped[date].cost += e.feedCost;
     });
     const labels = Object.keys(grouped).sort();
-    
+
     return {
       labels,
       datasets: [
@@ -240,7 +240,7 @@ const FeedManagement = () => {
             <div className="row g-3 mb-4">
               <div className="col-md-3">
                 <label className="form-label small fw-semibold text-muted">Select Batch <span className="text-danger">*</span></label>
-                <select className="form-select form-control-modern w-100" name="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required>
+                <select className="form-select form-control-modern w-100" name="name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required>
                   <option value="">-- Select Active Batch --</option>
                   {activeBatches.map(b => (
                     <option key={b._id} value={b.name}>{b.name}</option>
@@ -252,27 +252,27 @@ const FeedManagement = () => {
               </div>
               <div className="col-md-3">
                 <label className="form-label small fw-semibold text-muted">Date <span className="text-danger">*</span></label>
-                <input type="date" className="form-control-modern w-100" name="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />
+                <input type="date" className="form-control-modern w-100" name="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} required />
               </div>
               <div className="col-md-3">
                 <label className="form-label small fw-semibold text-muted">Weight (KG) <span className="text-danger">*</span></label>
-                <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="feedWeight" value={formData.feedWeight} onChange={e => setFormData({...formData, feedWeight: e.target.value})} required />
+                <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="feedWeight" value={formData.feedWeight} onChange={e => setFormData({ ...formData, feedWeight: e.target.value })} required />
               </div>
               <div className="col-md-3">
                 <label className="form-label small fw-semibold text-muted">Total Cost (₹) <span className="text-danger">*</span></label>
-                <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="feedCost" value={formData.feedCost} onChange={e => setFormData({...formData, feedCost: e.target.value})} required />
+                <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="feedCost" value={formData.feedCost} onChange={e => setFormData({ ...formData, feedCost: e.target.value })} required />
               </div>
               <div className="col-md-4">
                 <label className="form-label small fw-semibold text-muted">Feed Type (Optional)</label>
-                <input type="text" className="form-control-modern w-100" name="feedType" value={formData.feedType} onChange={e => setFormData({...formData, feedType: e.target.value})} />
+                <input type="text" className="form-control-modern w-100" name="feedType" value={formData.feedType} onChange={e => setFormData({ ...formData, feedType: e.target.value })} />
               </div>
               <div className="col-md-4">
                 <label className="form-label small fw-semibold text-muted">Supplier (Optional)</label>
-                <input type="text" className="form-control-modern w-100" name="supplier" value={formData.supplier} onChange={e => setFormData({...formData, supplier: e.target.value})} />
+                <input type="text" className="form-control-modern w-100" name="supplier" value={formData.supplier} onChange={e => setFormData({ ...formData, supplier: e.target.value })} />
               </div>
               <div className="col-md-4">
                 <label className="form-label small fw-semibold text-muted">Entered By <span className="text-danger">*</span></label>
-                <input type="text" className="form-control-modern w-100" name="enteredBy" value={formData.enteredBy} onChange={e => setFormData({...formData, enteredBy: e.target.value})} required />
+                <input type="text" className="form-control-modern w-100" name="enteredBy" value={formData.enteredBy} onChange={e => setFormData({ ...formData, enteredBy: e.target.value })} required />
               </div>
             </div>
             <div className="d-flex justify-content-end gap-2">
@@ -283,79 +283,180 @@ const FeedManagement = () => {
         </div>
       )}
 
-      <div className="row g-4 mb-4">
-        <div className="col-12 col-xl-4">
-          <div className="saas-card p-4 h-100">
-            <div className="d-flex justify-content-between mb-3">
-              <h5 className="fw-bold m-0">Analytics</h5>
-              <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
-                <option value="line">Line</option>
-                <option value="area">Area</option>
-                <option value="column">Bar</option>
-                <option value="pie">Pie (by Type)</option>
-              </select>
-            </div>
-            <div style={{ height: '300px' }}>{renderChart()}</div>
-          </div>
-        </div>
+     <div className="col-12">
+  {" "}
+  <div className="saas-card h-100 d-flex flex-column w-100">
+    {" "}
+    <div className="p-3 border-bottom d-flex justify-content-between gap-2 flex-wrap">
+      {" "}
+      <div className="position-relative w-100" style={{ maxWidth: "300px" }}>
+        {" "}
+        <Search
+          size={16}
+          className="position-absolute top-50 translate-middle-y text-muted"
+          style={{ left: "12px" }}
+        />{" "}
+        <input
+          type="text"
+          className="form-control-modern w-100 form-control-sm"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={function (e) {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          style={{ paddingLeft: "34px" }}
+        />{" "}
+      </div>{" "}
+      <div className="d-flex gap-2">
+        {" "}
+        <button className="btn btn-light btn-sm border" onClick={exportToExcel}>
+          {" "}
+          <Download size={14} />{" "}
+        </button>{" "}
+        <button className="btn btn-light btn-sm border" onClick={exportToPDF}>
+          {" "}
+          <Printer size={14} />{" "}
+        </button>{" "}
+      </div>{" "}
+    </div>{" "}
+    <div className="table-responsive flex-grow-1 w-100">
+      {" "}
+      <table className="modern-table w-100" style={{ minWidth: "900px" }}>
+        {" "}
+        <thead>
+          {" "}
+          <tr>
+            {" "}
+            <th>Name</th> <th>Date</th> <th>Type</th> <th>Supplier</th>{" "}
+            <th>Weight</th> <th>Cost</th> <th>Entered By</th>{" "}
+            <th className="text-end">Actions</th>{" "}
+          </tr>{" "}
+        </thead>{" "}
+        <tbody>
+          {" "}
+          {loading ? (
+            <tr>
+              {" "}
+              <td colSpan="8" className="text-center py-4">
+                {" "}
+                <div className="spinner-border text-primary"></div>{" "}
+              </td>{" "}
+            </tr>
+          ) : tableData.length > 0 ? (
+            tableData.map((item) => (
+              <tr key={item._id}>
+                {" "}
+                <td className="fw-medium"> {item.name} </td>{" "}
+                <td
+                  className="text-primary text-decoration-underline"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setSelectedRecord(item)}
+                >
+                  {" "}
+                  {formatDate(item.date)}{" "}
+                </td>{" "}
+                <td> {item.feedType || "-"} </td>{" "}
+                <td> {item.supplier || "-"} </td>{" "}
+                <td>
+                  {" "}
+                  <span className="badge-modern badge-success">
+                    {" "}
+                    {item.feedWeight} KG{" "}
+                  </span>{" "}
+                </td>{" "}
+                <td className="fw-bold text-danger"> ₹{item.feedCost} </td>{" "}
+                <td> {item.enteredBy} </td>{" "}
+                <td className="text-end">
+                  {" "}
+                  <button
+                    className="btn btn-sm btn-light text-primary me-2"
+                    onClick={() => handleEdit(item)}
+                  >
+                    {" "}
+                    <Edit2 size={16} />{" "}
+                  </button>{" "}
+                  <button
+                    className="btn btn-sm btn-light text-danger"
+                    onClick={() => handleDelete(item._id)}
+                  >
+                    {" "}
+                    <Trash2 size={16} />{" "}
+                  </button>{" "}
+                </td>{" "}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              {" "}
+              <td colSpan="8" className="text-center py-4 text-muted">
+                {" "}
+                <AlertCircle size={32} className="opacity-50 mb-2" />{" "}
+                <p className="mb-0"> No records found. </p>{" "}
+              </td>{" "}
+            </tr>
+          )}{" "}
+        </tbody>{" "}
+      </table>{" "}
+    </div>{" "}
+    {totalPages > 1 && (
+      <div className="p-3 border-top d-flex justify-content-end gap-1 flex-wrap">
+        {" "}
+        <button
+          className="btn btn-sm btn-light border"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((p) => p - 1)}
+        >
+          {" "}
+          <ChevronLeft size={16} />{" "}
+        </button>{" "}
+        {Array.from({ length: totalPages }).map((_, i) => (
+          <button
+            key={i}
+            className={`btn btn-sm ${
+              currentPage === i + 1 ? "btn-primary" : "btn-light border"
+            }`}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {" "}
+            {i + 1}{" "}
+          </button>
+        ))}{" "}
+        <button
+          className="btn btn-sm btn-light border"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((p) => p + 1)}
+        >
+          {" "}
+          <ChevronRight size={16} />{" "}
+        </button>{" "}
+      </div>
+    )}{" "}
+  </div>{" "}
+</div>;
 
-        <div className="col-12 col-xl-8">
-          <div className="saas-card h-100 d-flex flex-column">
-            <div className="p-3 border-bottom d-flex justify-content-between gap-2">
-              <div className="position-relative w-100" style={{ maxWidth: '300px' }}>
-                <Search size={16} className="position-absolute top-50 translate-middle-y text-muted" style={{ left: '12px' }} />
-                <input type="text" className="form-control-modern w-100 form-control-sm" placeholder="Search..." value={searchTerm} onChange={e => {setSearchTerm(e.target.value); setCurrentPage(1);}} style={{ paddingLeft: '34px' }} />
-              </div>
-              <div className="d-flex gap-2">
-                <button className="btn btn-light btn-sm border" onClick={exportToExcel}><Download size={14}/></button>
-                <button className="btn btn-light btn-sm border" onClick={exportToPDF}><Printer size={14}/></button>
-              </div>
-            </div>
 
-            <div className="table-responsive flex-grow-1">
-              <table className="modern-table">
-                <thead>
-                  <tr><th>Name</th><th>Date</th><th>Type</th><th>Supplier</th><th>Weight</th><th>Cost</th><th>Entered By</th><th className="text-end">Actions</th></tr>
-                </thead>
-                <tbody>
-                  {loading ? <tr><td colSpan="8" className="text-center py-4"><div className="spinner-border text-primary"></div></td></tr> : tableData.length > 0 ? tableData.map(item => (
-                    <tr key={item._id}>
-                      <td className="fw-medium">{item.name}</td>
-                      <td className="text-primary text-decoration-underline" style={{ cursor: 'pointer' }} onClick={() => setSelectedRecord(item)}>{formatDate(item.date)}</td>
-                      <td>{item.feedType || '-'}</td>
-                      <td>{item.supplier || '-'}</td>
-                      <td><span className="badge-modern badge-success">{item.feedWeight} KG</span></td>
-                      <td className="fw-bold text-danger">₹{item.feedCost}</td>
-                      <td>{item.enteredBy}</td>
-                      <td className="text-end">
-                        <button className="btn btn-sm btn-light text-primary me-2" onClick={() => handleEdit(item)}><Edit2 size={16}/></button>
-                        <button className="btn btn-sm btn-light text-danger" onClick={() => handleDelete(item._id)}><Trash2 size={16}/></button>
-                      </td>
-                    </tr>
-                  )) : <tr><td colSpan="8" className="text-center py-4 text-muted"><AlertCircle size={32} className="opacity-50 mb-2" /><p className="mb-0">No records found.</p></td></tr>}
-                </tbody>
-              </table>
-            </div>
-            
-            {totalPages > 1 && (
-              <div className="p-3 border-top d-flex justify-content-end gap-1">
-                <button className="btn btn-sm btn-light border" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={16} /></button>
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <button key={i} className={`btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-light border'}`} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                ))}
-                <button className="btn btn-sm btn-light border" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={16} /></button>
-              </div>
-            )}
+      <div className="col-12 col-xl-4 mt-3">
+        <div className="saas-card p-4 h-100">
+          <div className="d-flex justify-content-between mb-3">
+            <h5 className="fw-bold m-0">Analytics</h5>
+            <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
+              <option value="line">Line</option>
+              <option value="area">Area</option>
+              <option value="column">Bar</option>
+              <option value="pie">Pie (by Type)</option>
+            </select>
           </div>
+          <div style={{ height: '300px' }}>{renderChart()}</div>
         </div>
       </div>
-      
+
       {selectedRecord && (
         <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }} tabIndex="-1" onClick={(e) => { if (e.target.classList.contains('modal')) setSelectedRecord(null); }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg">
               <div className="modal-header bg-light border-bottom-0">
-                <h5 className="modal-title fw-bold d-flex align-items-center gap-2"><ShoppingBag size={20} className="text-primary"/> Feed Record Details</h5>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2"><ShoppingBag size={20} className="text-primary" /> Feed Record Details</h5>
                 <button type="button" className="btn-close" onClick={() => setSelectedRecord(null)}></button>
               </div>
               <div className="modal-body p-4 bg-light">

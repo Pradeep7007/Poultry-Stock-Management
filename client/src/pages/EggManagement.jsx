@@ -87,12 +87,21 @@ const EggManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const eggsProduced = Number(formData.eggsProduced);
+      const eggsSold = Number(formData.eggsSold);
+      const damagedEggs = Number(formData.damagedEggs) || 0;
+
+      if ((eggsSold + damagedEggs) > eggsProduced) {
+        toast.error('Eggs sold and damaged cannot exceed eggs produced today.');
+        return;
+      }
+
       const payload = {
         name: formData.name,
         date: formData.date,
-        eggsProduced: Number(formData.eggsProduced),
-        eggsSold: Number(formData.eggsSold),
-        damagedEggs: Number(formData.damagedEggs) || 0,
+        eggsProduced,
+        eggsSold,
+        damagedEggs,
         eggPrice: Number(formData.eggPrice),
         profitPerEgg: formData.profitPerEgg ? Number(formData.profitPerEgg) : 0,
         enteredBy: formData.enteredBy
