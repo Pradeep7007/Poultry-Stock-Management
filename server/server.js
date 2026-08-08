@@ -9,7 +9,6 @@ const henRoutes = require('./routes/henRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
 
 connectDB();
-
 const app = express();
 
 app.use(cors());
