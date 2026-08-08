@@ -1,6 +1,6 @@
 const HenDeath = require('../models/HenDeath');
 const Batch = require('../models/Batch');
-const { appendToSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new hen mortality entry
@@ -97,12 +97,33 @@ const updateHenDeath = async (req, res) => {
         await batch.save();
       }
 
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.deadToday,
+        batch ? batch.aliveHens + (newDead - oldDead) : entry.deadToday, // approximate old aliveHens
+        formatDate(entry.createdAt),
+        entry.enteredBy
+      ];
+
       entry.name = req.body.name ? formatText(req.body.name) : entry.name;
       entry.date = req.body.date || entry.date;
       entry.deadToday = newDead;
       entry.enteredBy = req.body.enteredBy ? formatText(req.body.enteredBy) : entry.enteredBy;
 
       const updatedEntry = await entry.save();
+      
+      const newSheetData = [
+        updatedEntry.name,
+        formatDate(updatedEntry.date),
+        updatedEntry.deadToday,
+        batch ? batch.aliveHens : 0,
+        formatDate(updatedEntry.createdAt),
+        updatedEntry.enteredBy
+      ];
+      
+      await updateInSheet(oldSheetData, newSheetData, 2027024494);
+      
       res.json(updatedEntry);
     } else {
       res.status(404).json({ message: 'Entry not found' });

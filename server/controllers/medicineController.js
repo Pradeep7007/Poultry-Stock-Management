@@ -1,6 +1,6 @@
 const MedicineEntry = require('../models/MedicineEntry');
 const Batch = require('../models/Batch');
-const { appendToSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new medicine/vaccine entry
@@ -77,6 +77,20 @@ const updateMedicineEntry = async (req, res) => {
     const entry = await MedicineEntry.findById(req.params.id);
 
     if (entry) {
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.type,
+        entry.medicineName,
+        entry.dosage,
+        entry.quantity,
+        entry.cost,
+        entry.notes,
+        formatDate(entry.createdAt),
+        entry.enteredBy,
+        entry.unitType || 'Packet'
+      ];
+
       entry.date = req.body.date || entry.date;
       entry.type = req.body.type ? formatText(req.body.type) : entry.type;
       entry.medicineName = req.body.medicineName ? formatText(req.body.medicineName) : entry.medicineName;
@@ -88,6 +102,23 @@ const updateMedicineEntry = async (req, res) => {
       entry.enteredBy = req.body.enteredBy ? formatText(req.body.enteredBy) : entry.enteredBy;
 
       const updatedEntry = await entry.save();
+      
+      const newSheetData = [
+        updatedEntry.name,
+        formatDate(updatedEntry.date),
+        updatedEntry.type,
+        updatedEntry.medicineName,
+        updatedEntry.dosage,
+        updatedEntry.quantity,
+        updatedEntry.cost,
+        updatedEntry.notes,
+        formatDate(updatedEntry.createdAt),
+        updatedEntry.enteredBy,
+        updatedEntry.unitType || 'Packet'
+      ];
+      
+      await updateInSheet(oldSheetData, newSheetData, 496930642);
+      
       res.json(updatedEntry);
     } else {
       res.status(404).json({ message: 'Record not found' });

@@ -1,5 +1,5 @@
 const FeedEntry = require('../models/FeedEntry');
-const { appendToSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new feed entry
@@ -69,6 +69,17 @@ const updateFeedEntry = async (req, res) => {
     const entry = await FeedEntry.findById(req.params.id);
 
     if (entry) {
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.feedWeight,
+        entry.feedCost,
+        entry.feedType,
+        entry.supplier,
+        formatDate(entry.createdAt),
+        entry.enteredBy
+      ];
+
       entry.name = req.body.name ? formatText(req.body.name) : entry.name;
       entry.date = req.body.date || entry.date;
       entry.feedWeight = req.body.feedWeight !== undefined ? Number(req.body.feedWeight) : entry.feedWeight;
@@ -78,6 +89,20 @@ const updateFeedEntry = async (req, res) => {
       entry.enteredBy = req.body.enteredBy ? formatText(req.body.enteredBy) : entry.enteredBy;
 
       const updatedEntry = await entry.save();
+      
+      const newSheetData = [
+        updatedEntry.name,
+        formatDate(updatedEntry.date),
+        updatedEntry.feedWeight,
+        updatedEntry.feedCost,
+        updatedEntry.feedType,
+        updatedEntry.supplier,
+        formatDate(updatedEntry.createdAt),
+        updatedEntry.enteredBy
+      ];
+      
+      await updateInSheet(oldSheetData, newSheetData, 906025905);
+      
       res.json(updatedEntry);
     } else {
       res.status(404).json({ message: 'Entry not found' });

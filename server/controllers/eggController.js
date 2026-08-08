@@ -1,6 +1,6 @@
 const EggEntry = require('../models/EggEntry');
 const Batch = require('../models/Batch');
-const { appendToSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new egg entry
@@ -133,6 +133,20 @@ const updateEggEntry = async (req, res) => {
 
       const productionPercentage = Number(((eggsProduced / aliveHens) * 100).toFixed(2));
 
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.aliveHens,
+        entry.eggsProduced,
+        `${entry.productionPercentage}%`,
+        entry.eggsSold,
+        entry.eggPrice,
+        entry.salesAmount,
+        entry.profit,
+        formatDate(entry.createdAt),
+        entry.enteredBy
+      ];
+
       entry.name = formattedName;
       entry.date = req.body.date || entry.date;
       entry.aliveHens = aliveHens;
@@ -148,6 +162,23 @@ const updateEggEntry = async (req, res) => {
       entry.profit = entry.eggsSold * entry.profitPerEgg;
 
       const updatedEntry = await entry.save();
+      
+      const newSheetData = [
+        updatedEntry.name,
+        formatDate(updatedEntry.date),
+        updatedEntry.aliveHens,
+        updatedEntry.eggsProduced,
+        `${updatedEntry.productionPercentage}%`,
+        updatedEntry.eggsSold,
+        updatedEntry.eggPrice,
+        updatedEntry.salesAmount,
+        updatedEntry.profit,
+        formatDate(updatedEntry.createdAt),
+        updatedEntry.enteredBy
+      ];
+      
+      await updateInSheet(oldSheetData, newSheetData, 0);
+
       res.json(updatedEntry);
     } else {
       res.status(404).json({ message: 'Entry not found' });
