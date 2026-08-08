@@ -11,6 +11,7 @@ const Sidebar = ({ isOpen, onLogout }) => {
     { name: 'Hen Management', path: '/hens', icon: <Users size={20} /> },
     { name: 'Feed Management', path: '/feed', icon: <ShoppingBag size={20} /> },
     { name: 'Vaccines & Medicine', path: '/vaccines', icon: <Syringe size={20} /> },
+    { name: 'Create Batch', path: '/batch/new', icon: <Layers size={20} /> },
   ];
 
   return (

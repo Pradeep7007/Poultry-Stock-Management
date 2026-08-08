@@ -5,8 +5,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { 
-  Plus, Edit2, Trash2, Search, Download, Printer, ChevronLeft, ChevronRight,
-  Calendar, AlertCircle, Syringe, Activity, DollarSign, Clock
+  Plus, Edit2, Trash2, Search, Download, Printer, ChevronLeft, ChevronRight, AlertCircle, Syringe, Activity, DollarSign, Clock
 } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
 import {

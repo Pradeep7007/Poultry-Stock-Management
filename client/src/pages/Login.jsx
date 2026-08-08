@@ -15,7 +15,7 @@ const Login = ({ onLogin }) => {
 
     setTimeout(() => {
       setIsLoading(false);
-      if (username === 'pms' && password === '26082006' || username === 'pradeep' && password === '2006') {
+      if ((username === 'pms' && password === '26082006') || (username === 'pradeep' && password === '2006')) {
         toast.success('Sign in successful!');
         onLogin();
       } else {
