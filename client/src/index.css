@@ -1,21 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
 :root {
-  --primary: #4F46E5; /* Indigo */
+  --font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+
+  --primary: #4F46E5;
   --primary-hover: #4338CA;
-  --secondary: #10B981; /* Emerald */
-  --accent: #F43F5E; /* Rose */
-  --warning: #F59E0B; /* Amber */
+  --secondary: #10B981;
+  --accent: #F43F5E;
+  --warning: #F59E0B;
+
   --bg-color: #F9FAFB;
   --surface-color: #FFFFFF;
   --text-main: #111827;
   --text-muted: #6B7280;
   --border-color: #E5E7EB;
+
   --sidebar-bg: #111827;
   --sidebar-text: #9CA3AF;
   --sidebar-active: #FFFFFF;
 }
 
+/* Dark Mode */
 body.dark-mode {
   --bg-color: #0F172A;
   --surface-color: #1E293B;
@@ -25,24 +30,173 @@ body.dark-mode {
   --sidebar-bg: #0B0F19;
 }
 
+html,
+body,
+#root,
+button,
+input,
+optgroup,
+select,
+textarea,
+option,
+table,
+thead,
+tbody,
+tfoot,
+tr,
+th,
+td,
+label,
+a,
+span,
+div,
+p,
+small,
+strong,
+b,
+i,
+em,
+blockquote,
+code,
+pre,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+li,
+nav,
+header,
+footer,
+section,
+article,
+aside,
+main,
+form,
+fieldset,
+legend {
+  font-family: var(--font-family);
+}
+
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family);
   background-color: var(--bg-color);
   color: var(--text-main);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Animations */
+
+/* Make inheritance explicit for form controls */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   TYPOGRAPHY HIERARCHY
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-family: var(--font-family);
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+h1,
+.page-title {
+  font-size: clamp(1.5rem, 3vw + 1rem, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: clamp(1.25rem, 2vw + 1rem, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+h3 {
+  font-size: clamp(1.125rem, 1.5vw + 1rem, 1.5rem);
+  font-weight: 800;
+}
+
+h4,
+.section-heading {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+h5,
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+p {
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+  font-weight: 400;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-slide-up {
@@ -53,20 +207,67 @@ body {
   animation: fadeIn 0.4s ease forwards;
 }
 
-/* Base Components */
+
+/* =========================================================
+   BASE COMPONENTS
+   ========================================================= */
+
 .saas-card {
+  font-family: var(--font-family);
   background: var(--surface-color);
   border-radius: 16px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .saas-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+.saas-card h3,
+.stat-value {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-main);
+}
+
+.saas-card .text-uppercase {
+  letter-spacing: 0.05em;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-light,
+.btn-dark,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.btn-outline-primary,
+.btn-outline-secondary {
+  font-family: var(--font-family) !important;
 }
 
 .btn-primary-modern {
+  font-family: var(--font-family);
   background: var(--primary);
   color: white;
   border: none;
@@ -87,14 +288,44 @@ body {
   color: white;
 }
 
-/* Modern Inputs */
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+.form-label {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+
+.form-control,
+.form-select,
+.form-control-modern,
+.form-check-label,
+.input-group-text {
+  font-family: var(--font-family) !important;
+}
+
 .form-control-modern {
+  font-family: var(--font-family);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   transition: all 0.2s ease;
+}
+
+.form-control-modern::placeholder {
+  color: #9CA3AF;
+  font-weight: 400;
 }
 
 .form-control-modern:focus {
@@ -104,28 +335,39 @@ body {
   outline: none;
 }
 
-/* Data Table */
+
+/* =========================================================
+   DATA TABLE
+   ========================================================= */
+
 .modern-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  font-family: var(--font-family);
+  font-size: 0.875rem;
 }
 
 .modern-table th {
   background-color: var(--bg-color);
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 800;
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .modern-table td {
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
 }
 
 .modern-table tbody tr {
@@ -136,35 +378,102 @@ body {
   background-color: var(--bg-color);
 }
 
-/* Status Badges */
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
 .badge-modern {
+  font-family: var(--font-family);
   padding: 0.35em 0.8em;
   border-radius: 9999px;
-  font-weight: 600;
+  font-weight: 800;
   font-size: 0.75rem;
 }
-.badge-success { background: rgba(16, 185, 129, 0.1); color: #059669; }
-.badge-primary { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
-.badge-warning { background: rgba(245, 158, 11, 0.1); color: #D97706; }
-.badge-danger { background: rgba(244, 63, 94, 0.1); color: #E11D48; }
 
-body.dark-mode .badge-success { color: #34D399; }
-body.dark-mode .badge-primary { color: #818CF8; }
-body.dark-mode .badge-warning { color: #FBBF24; }
-body.dark-mode .badge-danger { color: #FB7185; }
+.badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
 
-/* Layout Grid */
+.badge-primary {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+}
+
+.badge-danger {
+  background: rgba(244, 63, 94, 0.1);
+  color: #E11D48;
+}
+
+body.dark-mode .badge-success {
+  color: #34D399;
+}
+
+body.dark-mode .badge-primary {
+  color: #818CF8;
+}
+
+body.dark-mode .badge-warning {
+  color: #FBBF24;
+}
+
+body.dark-mode .badge-danger {
+  color: #FB7185;
+}
+
+
+/* =========================================================
+   BOOTSTRAP / MODAL COMPONENTS
+   ========================================================= */
+
+.modal,
+.modal *,
+.dropdown-menu,
+.dropdown-menu *,
+.navbar,
+.navbar *,
+.sidebar,
+.sidebar *,
+.card,
+.card *,
+.alert,
+.alert *,
+.tooltip,
+.tooltip *,
+.popover,
+.popover * {
+  font-family: var(--font-family) !important;
+}
+
+.modal-title {
+  font-family: var(--font-family) !important;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   LAYOUT GRID
+   ========================================================= */
+
 .layout-wrapper {
   display: flex;
   min-height: 100vh;
 }
+
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Important for preventing flex blowout */
+  min-width: 0;
   transition: margin-left 0.3s ease;
 }
+
 .content-area {
   padding: 2rem;
   flex: 1;
@@ -174,4 +483,28 @@ body.dark-mode .badge-danger { color: #FB7185; }
   .content-area {
     padding: 1rem;
   }
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+  font-family: var(--font-family);
+}
+
+
+/* =========================================================
+   ICON + TEXT ALIGNMENT
+   ========================================================= */
+
+svg {
+  flex-shrink: 0;
+}
+
+button svg,
+a svg,
+.btn svg {
+  vertical-align: middle;
 }

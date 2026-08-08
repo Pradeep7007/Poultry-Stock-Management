@@ -384,44 +384,71 @@ const VaccineManagement = () => {
 
       {/* Details Modal */}
       {selectedRecord && (
-        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }} tabIndex="-1" onClick={(e) => { if (e.target.classList.contains('modal')) setSelectedRecord(null); }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg">
-              <div className="modal-header bg-light border-bottom-0">
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }} tabIndex="-1" onClick={(e) => { if (e.target.classList.contains('modal')) setSelectedRecord(null); }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg" style={{ maxHeight: '90vh' }}>
+              <div className="modal-header bg-white border-bottom">
                 <h5 className="modal-title fw-bold d-flex align-items-center gap-2"><Syringe size={20} className="text-primary"/> Treatment Details</h5>
                 <button type="button" className="btn-close" onClick={() => setSelectedRecord(null)}></button>
               </div>
-              <div className="modal-body p-4 bg-light">
-                <div className="row g-3">
-                  <div className="col-12">
-                    <div className="card border-0 shadow-sm">
-                      <div className="card-body">
-                        <h6 className="text-primary fw-bold mb-3 border-bottom pb-2">Treatment Overview</h6>
-                        <div className="row g-3">
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Batch Name</p><h6 className="fw-bold m-0">{selectedRecord.name}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Date</p><h6 className="fw-bold m-0">{formatDate(selectedRecord.date)}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Type</p><h6 className="fw-bold m-0">{selectedRecord.type}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Medicine Name</p><h6 className="fw-bold m-0">{selectedRecord.medicineName}</h6></div>
-                        </div>
+              <div className="modal-body p-4 bg-light" style={{ overflowY: 'auto' }}>
+                <div className="card border-0 shadow-sm mb-4">
+                  <div className="card-body p-4">
+                    <h6 className="text-primary fw-bold mb-4 border-bottom pb-2">Treatment Overview</h6>
+                    <div className="row g-4">
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Batch Name</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.name}</h6>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="col-12">
-                    <div className="card border-0 shadow-sm">
-                      <div className="card-body">
-                        <h6 className="text-info fw-bold mb-3 border-bottom pb-2">Dosage & Cost</h6>
-                        <div className="row g-3">
-                          <div className="col-4"><p className="text-muted small fw-semibold mb-1">Dosage</p><h6 className="fw-bold m-0">{selectedRecord.dosage}</h6></div>
-                          <div className="col-4"><p className="text-muted small fw-semibold mb-1">Quantity</p><h6 className="fw-bold m-0">{selectedRecord.quantity}</h6></div>
-                          <div className="col-4"><p className="text-muted small fw-semibold mb-1">Total Cost</p><h6 className="fw-bold text-danger m-0">₹{selectedRecord.cost}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Entered By</p><h6 className="fw-bold m-0">{selectedRecord.enteredBy || '-'}</h6></div>
-                          <div className="col-12"><p className="text-muted small fw-semibold mb-1">Notes</p><h6 className="fw-medium text-muted m-0">{selectedRecord.notes || 'No notes provided.'}</h6></div>
-                        </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Date</p>
+                        <h6 className="fw-bold m-0">{formatDate(selectedRecord.date)}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Type</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.type}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Medicine Name</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.medicineName}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Entered By</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.enteredBy || '-'}</h6>
                       </div>
                     </div>
                   </div>
                 </div>
+                  
+                <div className="card border-0 shadow-sm">
+                  <div className="card-body p-4">
+                    <h6 className="text-info fw-bold mb-4 border-bottom pb-2">Dosage & Cost</h6>
+                    <div className="row g-4">
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Dosage</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.dosage}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Quantity</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.quantity}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Total Cost</p>
+                        <h6 className="fw-bold text-danger m-0">₹{selectedRecord.cost}</h6>
+                      </div>
+                      <div className="col-12">
+                        <p className="text-muted small fw-semibold mb-1">Notes</p>
+                        <h6 className="fw-medium text-muted m-0">{selectedRecord.notes || 'No notes provided.'}</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-light border fw-medium" onClick={() => setSelectedRecord(null)}>Close</button>
+                <button type="button" className="btn btn-primary-modern fw-medium d-flex align-items-center gap-2" onClick={() => { handleEdit(selectedRecord); setSelectedRecord(null); }}>
+                  <Edit2 size={16} /> Edit Record
+                </button>
               </div>
             </div>
           </div>

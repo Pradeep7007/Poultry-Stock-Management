@@ -414,57 +414,97 @@ const EggManagement = () => {
         )}
       </div>
       {selectedRecord && (
-        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }} tabIndex="-1" onClick={(e) => { if (e.target.classList.contains('modal')) setSelectedRecord(null); }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg">
-              <div className="modal-header bg-light border-bottom-0">
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }} tabIndex="-1" onClick={(e) => { if (e.target.classList.contains('modal')) setSelectedRecord(null); }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg" style={{ maxHeight: '90vh' }}>
+              <div className="modal-header bg-white border-bottom">
                 <h5 className="modal-title fw-bold d-flex align-items-center gap-2"><Egg size={20} className="text-primary"/> Egg Record Details</h5>
                 <button type="button" className="btn-close" onClick={() => setSelectedRecord(null)}></button>
               </div>
-              <div className="modal-body p-4 bg-light">
-                <div className="row g-3">
-                  <div className="col-12">
-                    <div className="card border-0 shadow-sm">
-                      <div className="card-body">
-                        <h6 className="text-primary fw-bold mb-3 border-bottom pb-2">Record Overview</h6>
-                        <div className="row g-3">
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Batch Name</p><h6 className="fw-bold m-0">{selectedRecord.name}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Date</p><h6 className="fw-bold m-0">{formatDate(selectedRecord.date)}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Alive Hens</p><h6 className="fw-bold m-0">{selectedRecord.aliveHens?.toLocaleString() || '-'}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Entered By</p><h6 className="fw-bold m-0">{selectedRecord.enteredBy || '-'}</h6></div>
-                        </div>
+              <div className="modal-body p-4 bg-light" style={{ overflowY: 'auto' }}>
+                <div className="card border-0 shadow-sm mb-4">
+                  <div className="card-body p-4">
+                    <h6 className="text-primary fw-bold mb-4 border-bottom pb-2">Record Overview</h6>
+                    <div className="row g-4">
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Batch Name</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.name}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Date</p>
+                        <h6 className="fw-bold m-0">{formatDate(selectedRecord.date)}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Alive Hens</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.aliveHens?.toLocaleString() || '-'}</h6>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <p className="text-muted small fw-semibold mb-1">Entered By</p>
+                        <h6 className="fw-bold m-0">{selectedRecord.enteredBy || '-'}</h6>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="col-12 col-md-6">
+                </div>
+
+                <div className="row g-4">
+                  <div className="col-12 col-lg-6">
                     <div className="card border-0 shadow-sm h-100">
-                      <div className="card-body">
-                        <h6 className="text-info fw-bold mb-3 border-bottom pb-2">Production Metrics</h6>
-                        <div className="row g-3">
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Eggs Produced</p><h6 className="fw-bold m-0">{selectedRecord.eggsProduced?.toLocaleString()}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Production %</p><h6 className="fw-bold text-success m-0">{selectedRecord.productionPercentage ? selectedRecord.productionPercentage.toFixed(2) : '0.00'}%</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Eggs Sold</p><h6 className="fw-bold m-0">{selectedRecord.eggsSold?.toLocaleString()}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Damaged Eggs</p><h6 className="fw-bold text-danger m-0">{selectedRecord.damagedEggs || 0}</h6></div>
+                      <div className="card-body p-4">
+                        <h6 className="text-info fw-bold mb-4 border-bottom pb-2">Production Metrics</h6>
+                        <div className="row g-4">
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Eggs Produced</p>
+                            <h6 className="fw-bold m-0">{selectedRecord.eggsProduced?.toLocaleString()}</h6>
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Production %</p>
+                            <h6 className="fw-bold text-success m-0">{selectedRecord.productionPercentage ? selectedRecord.productionPercentage.toFixed(2) : '0.00'}%</h6>
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Eggs Sold</p>
+                            <h6 className="fw-bold m-0">{selectedRecord.eggsSold?.toLocaleString()}</h6>
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Damaged Eggs</p>
+                            <h6 className="fw-bold text-danger m-0">{selectedRecord.damagedEggs || 0}</h6>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="col-12 col-md-6">
+                  <div className="col-12 col-lg-6">
                     <div className="card border-0 shadow-sm h-100">
-                      <div className="card-body">
-                        <h6 className="text-warning fw-bold mb-3 border-bottom pb-2">Financials</h6>
-                        <div className="row g-3">
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Price Per Egg</p><h6 className="fw-bold m-0">₹{selectedRecord.eggPrice}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Est. Profit / Egg</p><h6 className="fw-bold m-0">₹{selectedRecord.profitPerEgg || 0}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Total Sales</p><h6 className="fw-bold text-primary m-0">₹{selectedRecord.salesAmount?.toLocaleString()}</h6></div>
-                          <div className="col-6"><p className="text-muted small fw-semibold mb-1">Total Profit</p><h6 className="fw-bold text-warning m-0">₹{selectedRecord.profit?.toLocaleString()}</h6></div>
+                      <div className="card-body p-4">
+                        <h6 className="text-warning fw-bold mb-4 border-bottom pb-2">Financials</h6>
+                        <div className="row g-4">
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Price Per Egg</p>
+                            <h6 className="fw-bold m-0">₹{selectedRecord.eggPrice}</h6>
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Est. Profit / Egg</p>
+                            <h6 className="fw-bold m-0">₹{selectedRecord.profitPerEgg || 0}</h6>
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Total Sales</p>
+                            <h6 className="fw-bold text-primary m-0">₹{selectedRecord.salesAmount?.toLocaleString()}</h6>
+                          </div>
+                          <div className="col-12 col-sm-6">
+                            <p className="text-muted small fw-semibold mb-1">Total Profit</p>
+                            <h6 className="fw-bold text-warning m-0">₹{selectedRecord.profit?.toLocaleString()}</h6>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-light border fw-medium" onClick={() => setSelectedRecord(null)}>Close</button>
+                <button type="button" className="btn btn-primary-modern fw-medium d-flex align-items-center gap-2" onClick={() => { handleEdit(selectedRecord); setSelectedRecord(null); }}>
+                  <Edit2 size={16} /> Edit Record
+                </button>
               </div>
             </div>
           </div>
