@@ -1,5 +1,5 @@
 const FeedEntry = require('../models/FeedEntry');
-const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet, deleteFromSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new feed entry
@@ -119,7 +119,20 @@ const deleteFeedEntry = async (req, res) => {
     const entry = await FeedEntry.findById(req.params.id);
 
     if (entry) {
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.feedWeight,
+        entry.feedCost,
+        entry.feedType,
+        entry.supplier,
+        formatDate(entry.createdAt),
+        entry.enteredBy
+      ];
+
       await entry.deleteOne();
+      await deleteFromSheet(oldSheetData, 906025905);
+      
       res.json({ message: 'Entry removed' });
     } else {
       res.status(404).json({ message: 'Entry not found' });

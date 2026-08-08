@@ -1,6 +1,6 @@
 const EggEntry = require('../models/EggEntry');
 const Batch = require('../models/Batch');
-const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet, deleteFromSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new egg entry
@@ -195,7 +195,23 @@ const deleteEggEntry = async (req, res) => {
     const entry = await EggEntry.findById(req.params.id);
 
     if (entry) {
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.aliveHens,
+        entry.eggsProduced,
+        `${entry.productionPercentage}%`,
+        entry.eggsSold,
+        entry.eggPrice,
+        entry.salesAmount,
+        entry.profit,
+        formatDate(entry.createdAt),
+        entry.enteredBy
+      ];
+      
       await entry.deleteOne();
+      await deleteFromSheet(oldSheetData, 0);
+      
       res.json({ message: 'Entry removed' });
     } else {
       res.status(404).json({ message: 'Entry not found' });

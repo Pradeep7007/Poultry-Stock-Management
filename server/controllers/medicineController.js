@@ -1,6 +1,6 @@
 const MedicineEntry = require('../models/MedicineEntry');
 const Batch = require('../models/Batch');
-const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet, deleteFromSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new medicine/vaccine entry
@@ -136,7 +136,23 @@ const deleteMedicineEntry = async (req, res) => {
     const entry = await MedicineEntry.findById(req.params.id);
 
     if (entry) {
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.type,
+        entry.medicineName,
+        entry.dosage,
+        entry.quantity,
+        entry.cost,
+        entry.notes,
+        formatDate(entry.createdAt),
+        entry.enteredBy,
+        entry.unitType || 'Packet'
+      ];
+      
       await entry.deleteOne();
+      await deleteFromSheet(oldSheetData, 496930642);
+      
       res.json({ message: 'Record removed' });
     } else {
       res.status(404).json({ message: 'Record not found' });

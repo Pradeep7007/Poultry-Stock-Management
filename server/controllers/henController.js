@@ -1,6 +1,6 @@
 const HenDeath = require('../models/HenDeath');
 const Batch = require('../models/Batch');
-const { appendToSheet, updateInSheet } = require('../services/googleSheetsService');
+const { appendToSheet, updateInSheet, deleteFromSheet } = require('../services/googleSheetsService');
 const { formatText, formatDate } = require('../utils/formatter');
 
 // @desc    Create new hen mortality entry
@@ -141,11 +141,25 @@ const deleteHenDeath = async (req, res) => {
 
     if (entry) {
       const batch = await Batch.findById(entry.batchId);
+      let aliveHens = entry.deadToday;
       if (batch) {
         batch.aliveHens += entry.deadToday;
+        aliveHens = batch.aliveHens - entry.deadToday;
         await batch.save();
       }
+
+      const oldSheetData = [
+        entry.name,
+        formatDate(entry.date),
+        entry.deadToday,
+        aliveHens,
+        formatDate(entry.createdAt),
+        entry.enteredBy
+      ];
+
       await entry.deleteOne();
+      await deleteFromSheet(oldSheetData, 2027024494);
+      
       res.json({ message: 'Entry removed' });
     } else {
       res.status(404).json({ message: 'Entry not found' });

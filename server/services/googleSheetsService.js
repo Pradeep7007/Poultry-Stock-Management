@@ -126,4 +126,78 @@ const updateInSheet = async (oldData, newData, gid = 0) => {
   }
 };
 
-module.exports = { appendToSheet, updateInSheet };
+const deleteFromSheet = async (oldData, gid = 0) => {
+  try {
+    if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL || !process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
+      return { success: false, message: 'Google Sheets credentials missing' };
+    }
+
+    let formattedPrivateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
+    if (formattedPrivateKey.startsWith('"') && formattedPrivateKey.endsWith('"')) {
+      formattedPrivateKey = formattedPrivateKey.slice(1, -1);
+    }
+    formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
+
+    const auth = new google.auth.GoogleAuth({
+      credentials: { client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL, private_key: formattedPrivateKey },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const client = await auth.getClient();
+    const googleSheets = google.sheets({ version: 'v4', auth: client });
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+
+    // Get sheet name
+    const sheetMetadata = await googleSheets.spreadsheets.get({ spreadsheetId });
+    const sheet = sheetMetadata.data.sheets.find(s => s.properties.sheetId === Number(gid));
+    if (!sheet) return { success: false, message: "Sheet not found" };
+    const sheetName = sheet.properties.title;
+
+    // Get all rows
+    const response = await googleSheets.spreadsheets.values.get({ spreadsheetId, range: sheetName });
+    const rows = response.data.values || [];
+    
+    let rowIndexToDelete = -1;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i] && rows[i][0] === String(oldData[0]) && rows[i][1] === String(oldData[1])) {
+        if (rows[i][2] === String(oldData[2]) || rows[i][3] === String(oldData[3])) {
+          rowIndexToDelete = i;
+          break;
+        } else if (!oldData[3]) {
+          rowIndexToDelete = i;
+          break;
+        }
+      }
+    }
+
+    if (rowIndexToDelete === -1) {
+      return { success: false, message: "Matching row not found in Google Sheets" };
+    }
+
+    // Delete row using deleteDimension
+    await googleSheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      resource: {
+        requests: [
+          {
+            deleteDimension: {
+              range: {
+                sheetId: Number(gid),
+                dimension: "ROWS",
+                startIndex: rowIndexToDelete,
+                endIndex: rowIndexToDelete + 1
+              }
+            }
+          }
+        ]
+      }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting from sheet:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+module.exports = { appendToSheet, updateInSheet, deleteFromSheet };
