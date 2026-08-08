@@ -40,7 +40,6 @@ const createMedicineEntry = async (req, res) => {
       entry.quantity,
       entry.cost,
       entry.notes,
-      entry.batchId.toString(),
       formatDate(entry.createdAt),
       entry.enteredBy,
       entry.unitType || 'Packet'
