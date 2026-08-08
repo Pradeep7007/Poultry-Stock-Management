@@ -20,6 +20,7 @@ const HenManagement = () => {
   const [batches, setBatches] = useState([]);
   const [deaths, setDeaths] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   // Form State
@@ -68,6 +69,7 @@ const HenManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const payload = {
         name: formData.name,
@@ -88,6 +90,8 @@ const HenManagement = () => {
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -307,7 +311,9 @@ const HenManagement = () => {
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-light fw-medium border" onClick={handleResetForm}>Cancel</button>
-              <button type="submit" className="btn-primary-modern px-4" style={{ backgroundColor: 'var(--accent)' }}>Save Record</button>
+              <button type="submit" className="btn-primary-modern px-4" style={{ backgroundColor: 'var(--accent)' }} disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Record'}
+              </button>
             </div>
           </form>
         </div>

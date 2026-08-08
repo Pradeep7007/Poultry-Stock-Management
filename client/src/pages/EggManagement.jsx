@@ -14,6 +14,7 @@ const EggManagement = () => {
   const [entries, setEntries] = useState([]);
   const [activeBatches, setActiveBatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   
   const [showForm, setShowForm] = useState(false);
@@ -85,6 +86,7 @@ const EggManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const eggsProduced = Number(formData.eggsProduced);
       const eggsSold = Number(formData.eggsSold);
@@ -92,6 +94,7 @@ const EggManagement = () => {
 
       if ((eggsSold + damagedEggs) > eggsProduced) {
         toast.error('Eggs sold and damaged cannot exceed eggs produced today.');
+        setIsSubmitting(false);
         return;
       }
 
@@ -121,6 +124,8 @@ const EggManagement = () => {
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -307,7 +312,9 @@ const EggManagement = () => {
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-light fw-medium border" onClick={handleResetForm}>Cancel</button>
-              <button type="submit" className="btn-primary-modern px-4">{isEditing ? 'Update Record' : 'Save Record'}</button>
+              <button type="submit" className="btn-primary-modern px-4" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : (isEditing ? 'Update Record' : 'Save Record')}
+              </button>
             </div>
           </form>
         </div>

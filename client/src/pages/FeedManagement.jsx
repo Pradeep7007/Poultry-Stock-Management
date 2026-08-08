@@ -21,6 +21,7 @@ const FeedManagement = () => {
   const [eggEntries, setEggEntries] = useState([]);
   const [activeBatches, setActiveBatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const [showForm, setShowForm] = useState(false);
@@ -65,6 +66,7 @@ const FeedManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const payload = {
         name: formData.name, date: formData.date,
@@ -84,6 +86,8 @@ const FeedManagement = () => {
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -280,7 +284,9 @@ const FeedManagement = () => {
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-light fw-medium border" onClick={handleResetForm}>Cancel</button>
-              <button type="submit" className="btn-primary-modern px-4" style={{ backgroundColor: 'var(--warning)', color: '#000' }}>Save Record</button>
+              <button type="submit" className="btn-primary-modern px-4" style={{ backgroundColor: 'var(--warning)', color: '#000' }} disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Record'}
+              </button>
             </div>
           </form>
         </div>
