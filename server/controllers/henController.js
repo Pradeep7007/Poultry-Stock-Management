@@ -50,7 +50,7 @@ const createHenDeath = async (req, res) => {
       entry.enteredBy
     ];
 
-    const sheetResult = await appendToSheet(sheetData, 'Hen');
+    const sheetResult = await appendToSheet(sheetData, 2027024494);
 
     let message = 'Mortality entry saved successfully.';
     if (!sheetResult.success) {

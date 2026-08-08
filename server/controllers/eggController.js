@@ -79,7 +79,7 @@ const createEggEntry = async (req, res) => {
       entry.enteredBy
     ];
 
-    const sheetResult = await appendToSheet(sheetData, 'Sheet1');
+    const sheetResult = await appendToSheet(sheetData, 0);
 
     let message = 'Record saved successfully.';
     if (!sheetResult.success) {

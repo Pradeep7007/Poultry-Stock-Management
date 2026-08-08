@@ -7,8 +7,7 @@ import 'jspdf-autotable';
 import { 
   Search, Plus, Download, Printer, Edit2, Trash2, 
   ChevronLeft, ChevronRight, Filter, AlertCircle,
-  Package, ShoppingCart, Egg, AlertTriangle, TrendingUp, Calendar
-} from 'lucide-react';
+  Package, ShoppingCart, Egg, AlertTriangle, TrendingUp} from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
 
 const EggManagement = () => {
@@ -248,8 +247,8 @@ const EggManagement = () => {
                 {stat.icon}
               </div>
               <div>
-                <p className="text-muted small fw-semibold mb-0 text-uppercase" style={{ letterSpacing: '0.5px' }}>{stat.title}</p>
-                <h4 className="fw-bold m-0">{stat.value}</h4>
+                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
+                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
               </div>
             </div>
           </div>

@@ -44,7 +44,7 @@ const createMedicineEntry = async (req, res) => {
       entry.enteredBy
     ];
 
-    const sheetResult = await appendToSheet(sheetData, 'Vaccine');
+    const sheetResult = await appendToSheet(sheetData, 496930642);
 
     res.status(201).json({ 
       entry, 

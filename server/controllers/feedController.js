@@ -38,7 +38,7 @@ const createFeedEntry = async (req, res) => {
       entry.enteredBy
     ];
 
-    const sheetResult = await appendToSheet(sheetData, 'Feed');
+    const sheetResult = await appendToSheet(sheetData, 906025905);
 
     let message = 'Feed entry saved successfully.';
     if (!sheetResult.success) {

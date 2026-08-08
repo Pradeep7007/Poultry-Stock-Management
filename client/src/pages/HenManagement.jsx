@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { 
-  Plus, Edit2, Trash2, Search, Download, Printer, Filter, ChevronLeft, ChevronRight,
-  Activity, Users, Skull, Clock, AlertCircle, Calendar
+  Plus, Edit2, Trash2, Search, Download, Printer,  ChevronLeft, ChevronRight,
+  Activity, Users, Skull, Clock, AlertCircle,
 } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
 import {
@@ -254,8 +254,8 @@ const HenManagement = () => {
               <div className={`mx-auto mb-2 text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '40px', height: '40px' }}>
                 {stat.icon}
               </div>
-              <h5 className="fw-bold m-0">{stat.value}</h5>
-              <p className="text-muted small fw-medium m-0">{stat.title}</p>
+              <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
+              <p className="text-muted small fw-semibold text-uppercase mt-1 mb-0">{stat.title}</p>
             </div>
           </div>
         ))}

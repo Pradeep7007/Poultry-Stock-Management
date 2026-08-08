@@ -1,6 +1,6 @@
 const { google } = require('googleapis');
 
-const appendToSheet = async (data, sheetName = 'Sheet1') => {
+const appendToSheet = async (data, gid = 0) => {
   try {
     if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL || !process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
       console.warn("Google Sheets credentials not found. Skipping Google Sheets integration.");
@@ -26,14 +26,31 @@ const appendToSheet = async (data, sheetName = 'Sheet1') => {
 
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
-    await googleSheets.spreadsheets.values.append({
+    const rowData = {
+      values: data.map(val => {
+        if (val === null || val === undefined) val = '';
+        if (typeof val === 'number') {
+          return { userEnteredValue: { numberValue: val } };
+        } else {
+          return { userEnteredValue: { stringValue: String(val) } };
+        }
+      })
+    };
+
+    await googleSheets.spreadsheets.batchUpdate({
       auth,
       spreadsheetId,
-      range: sheetName, // Dinamically append to different sheets
-      valueInputOption: 'USER_ENTERED',
       resource: {
-        values: [data],
-      },
+        requests: [
+          {
+            appendCells: {
+              sheetId: Number(gid),
+              rows: [rowData],
+              fields: 'userEnteredValue'
+            }
+          }
+        ]
+      }
     });
 
     return { success: true };

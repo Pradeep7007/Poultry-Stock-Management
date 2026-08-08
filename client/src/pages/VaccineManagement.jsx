@@ -122,7 +122,7 @@ const VaccineManagement = () => {
   };
 
   // --- Metrics ---
-  const activeEntries = entries.filter(e => activeBatch && e.batchId === activeBatch._id);
+  // const activeEntries = entries.filter(e => activeBatch && e.batchId === activeBatch._id);
   
   const medicines = entries.filter(e => e.type === 'Medicine');
   const vaccines = entries.filter(e => e.type === 'Vaccine');
@@ -240,7 +240,10 @@ const VaccineManagement = () => {
           <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
             <div className="saas-card p-3 h-100 d-flex align-items-center gap-3">
               <div className={`text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle p-3`}>{stat.icon}</div>
-              <div><p className="text-muted small fw-semibold m-0 text-uppercase">{stat.title}</p><h5 className="fw-bold m-0">{stat.value}</h5></div>
+              <div>
+                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
+                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
+              </div>
             </div>
           </div>
         ))}

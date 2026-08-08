@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { 
-  TrendingUp, Package, DollarSign, Activity, Egg, Calendar, Filter, Syringe, Users, Clock, Settings
+  TrendingUp, Package, DollarSign, Activity, Egg, Filter, Syringe, Users, Clock, Settings
 } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
 import {
@@ -25,16 +25,82 @@ const Dashboard = () => {
   const [customEnd, setCustomEnd] = useState('');
   const [showCustom, setShowCustom] = useState(false);
 
-  const DEFAULT_CHART_CONFIG = [
-    { id: 'eggsProduced', title: 'Eggs Produced', enabled: true, chartType: 'line', color: '#3B82F6', bgColor: 'rgba(59, 130, 246, 0.1)', formatCurrency: false },
-    { id: 'eggsDamaged', title: 'Eggs Damaged', enabled: true, chartType: 'bar', color: '#F43F5E', bgColor: 'rgba(244, 63, 94, 0.1)', formatCurrency: false },
-    { id: 'eggSales', title: 'Egg Sales', enabled: true, chartType: 'area', color: '#10B981', bgColor: 'rgba(16, 185, 129, 0.1)', formatCurrency: false },
-    { id: 'revenue', title: 'Revenue', enabled: true, chartType: 'area', color: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', formatCurrency: true },
-    { id: 'feedCost', title: 'Feed Cost', enabled: false, chartType: 'bar', color: '#8B5CF6', bgColor: 'rgba(139, 92, 246, 0.1)', formatCurrency: true },
-    { id: 'treatmentCost', title: 'Treatment Cost', enabled: false, chartType: 'bar', color: '#06B6D4', bgColor: 'rgba(6, 182, 212, 0.1)', formatCurrency: true },
-    { id: 'profit', title: 'Profit', enabled: true, chartType: 'line', color: '#4F46E5', bgColor: 'rgba(79, 70, 229, 0.1)', formatCurrency: true },
-    { id: 'mortality', title: 'Mortality', enabled: false, chartType: 'line', color: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.1)', formatCurrency: false }
-  ];
+
+const DEFAULT_CHART_CONFIG = [
+  {
+    id: 'eggsProduced',
+    title: 'Eggs Produced',
+    enabled: false,
+    chartType: 'line',
+    color: '#3B82F6',
+    bgColor: 'rgba(59, 130, 246, 0.1)',
+    formatCurrency: false
+  },
+  {
+    id: 'eggsDamaged',
+    title: 'Eggs Damaged',
+    enabled: false,
+    chartType: 'line',
+    color: '#F43F5E',
+    bgColor: 'rgba(244, 63, 94, 0.1)',
+    formatCurrency: false
+  },
+  {
+    id: 'eggSales',
+    title: 'Egg Sales',
+    enabled: false,
+    chartType: 'line',
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
+    formatCurrency: false
+  },
+  {
+    id: 'revenue',
+    title: 'Revenue',
+    enabled: false,
+    chartType: 'line',
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.1)',
+    formatCurrency: true
+  },
+  {
+    id: 'feedCost',
+    title: 'Feed Cost',
+    enabled: false,
+    chartType: 'line',
+    color: '#8B5CF6',
+    bgColor: 'rgba(139, 92, 246, 0.1)',
+    formatCurrency: true
+  },
+  {
+    id: 'treatmentCost',
+    title: 'Treatment Cost',
+    enabled: false,
+    chartType: 'line',
+    color: '#06B6D4',
+    bgColor: 'rgba(6, 182, 212, 0.1)',
+    formatCurrency: true
+  },
+  {
+    id: 'profit',
+    title: 'Profit',
+    enabled: false,
+    chartType: 'line',
+    color: '#4F46E5',
+    bgColor: 'rgba(79, 70, 229, 0.1)',
+    formatCurrency: true
+  },
+  {
+    id: 'mortality',
+    title: 'Mortality',
+    enabled: false,
+    chartType: 'line',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+    formatCurrency: false
+  }
+];
+
 
   const [chartConfig, setChartConfig] = useState(() => {
     const saved = localStorage.getItem('dashboardChartConfig');
@@ -122,8 +188,8 @@ const Dashboard = () => {
 
   // Metrics
   const totalProduced = filteredEntries.reduce((acc, curr) => acc + curr.eggsProduced, 0);
-  const totalSold = filteredEntries.reduce((acc, curr) => acc + curr.eggsSold, 0);
-  const totalDamaged = filteredEntries.reduce((acc, curr) => acc + (curr.damagedEggs || 0), 0);
+  // const totalSold = filteredEntries.reduce((acc, curr) => acc + curr.eggsSold, 0);
+  // const totalDamaged = filteredEntries.reduce((acc, curr) => acc + (curr.damagedEggs || 0), 0);
   const totalRevenue = filteredEntries.reduce((acc, curr) => acc + curr.salesAmount, 0);
   const totalProfit = filteredEntries.reduce((acc, curr) => acc + (curr.profit || 0), 0);
   
@@ -264,7 +330,7 @@ const Dashboard = () => {
     const dataVals = labels.map(l => groupedData[l][dataKey] || 0);
 
     const isArea = configItem.chartType === 'area';
-    const isLine = configItem.chartType === 'line';
+    // const isLine = configItem.chartType === 'line';
     
     const dataset = {
       label: configItem.title,
@@ -350,7 +416,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div>
-                <p className="text-muted small fw-semibold text-uppercase letter-spacing-1 mb-1">{stat.title}</p>
+                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
                 <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
               </div>
             </div>
