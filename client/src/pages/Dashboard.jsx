@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 // import { Link } from 'react-router-dom';
-import api from '../services/api';
 import toast from 'react-hot-toast';
 import { 
   TrendingUp, Package, DollarSign, Activity, Egg, Filter, Syringe, Users, Clock, Settings
@@ -121,11 +120,17 @@ const DEFAULT_CHART_CONFIG = [
     toast.error('Failed to fetch dashboard data');
   }
 
-  const rawEntries = results[0].data || [];
-  const vaccines = results[1].data || [];
-  const batches = results[2].data || [];
-  const feeds = results[3].data || [];
-  const henDeaths = results[4].data || [];
+  const eggData = results[0].data;
+  const vaccineData = results[1].data;
+  const batchData = results[2].data;
+  const feedData = results[3].data;
+  const henData = results[4].data;
+
+  const rawEntries = useMemo(() => eggData || [], [eggData]);
+  const vaccines = useMemo(() => vaccineData || [], [vaccineData]);
+  const batches = useMemo(() => batchData || [], [batchData]);
+  const feeds = useMemo(() => feedData || [], [feedData]);
+  const henDeaths = useMemo(() => henData || [], [henData]);
 
   const entries = useMemo(() => {
     if (!batches.length || !rawEntries.length) return rawEntries;

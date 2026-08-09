@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchEggs, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
@@ -44,9 +44,13 @@ const EggManagement = () => {
     toast.error('Failed to load records');
   }
 
-  const rawEntries = useMemo(() => results[0].data || [], [results[0].data]);
-  const batches = useMemo(() => results[1].data || [], [results[1].data]);
-  const henDeaths = useMemo(() => results[2].data || [], [results[2].data]);
+  const eggData = results[0].data;
+  const batchData = results[1].data;
+  const henData = results[2].data;
+
+  const rawEntries = useMemo(() => eggData || [], [eggData]);
+  const batches = useMemo(() => batchData || [], [batchData]);
+  const henDeaths = useMemo(() => henData || [], [henData]);
 
   const entries = useMemo(() => {
     if (!batches.length || !rawEntries.length) return rawEntries;
