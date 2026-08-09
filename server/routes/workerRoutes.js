@@ -14,7 +14,9 @@ const {
   deleteSalaryPayment,
   assignWork,
   saveAttendance,
-  getPaymentSummary
+  getPaymentSummary,
+  getDailyEntriesForDate,
+  saveBulkAttendance
 } = require('../controllers/workerController');
 
 router.route('/')
@@ -22,6 +24,8 @@ router.route('/')
   .get(getWorkers);
 
 router.get('/payment-summary', getPaymentSummary);
+router.get('/daily-entries', getDailyEntriesForDate);
+router.post('/bulk-attendance', saveBulkAttendance);
 router.post('/assignments', assignWork);
 router.post('/attendance', saveAttendance);
 

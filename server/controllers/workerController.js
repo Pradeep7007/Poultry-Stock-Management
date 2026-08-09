@@ -253,7 +253,7 @@ const addDailyEntry = async (req, res) => {
 
     const entry = await DailyWorkEntry.create({
       workerId,
-      date: entryDate,
+      date: startOfDate,
       attendance,
       dailyWage: finalWage,
       workDetails: workDetails ? workDetails.trim() : '',
@@ -293,7 +293,7 @@ const updateDailyEntry = async (req, res) => {
       if (duplicateEntry) {
         return res.status(400).json({ message: 'Another entry already exists for this date.' });
       }
-      entry.date = entryDate;
+      entry.date = startOfDate;
     }
 
     if (attendance) entry.attendance = attendance;
@@ -566,6 +566,84 @@ const getPaymentSummary = async (req, res) => {
   }
 };
 
+// @desc    Get daily entries for all workers for a specific date
+// @route   GET /api/workers/daily-entries
+const getDailyEntriesForDate = async (req, res) => {
+  try {
+    const selectedDate = req.query.date ? new Date(req.query.date) : new Date();
+    const startOfDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const endOfDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59, 999);
+
+    const workers = await Worker.find({});
+    
+    const entries = await Promise.all(workers.map(async (worker) => {
+      const entry = await DailyWorkEntry.findOne({
+        workerId: worker._id,
+        date: { $gte: startOfDate, $lte: endOfDate }
+      });
+      return {
+        workerId: worker._id,
+        workerName: worker.name,
+        status: worker.status,
+        defaultDailyWage: worker.defaultDailyWage,
+        entry: entry || null
+      };
+    }));
+
+    res.json(entries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Save bulk attendance entries
+// @route   POST /api/workers/bulk-attendance
+const saveBulkAttendance = async (req, res) => {
+  try {
+    const { date, entries } = req.body;
+    if (!date || !entries || !Array.isArray(entries)) {
+      return res.status(400).json({ message: 'Please provide date and entries array.' });
+    }
+
+    const bulkDate = new Date(date);
+    const startOfDate = new Date(bulkDate.getFullYear(), bulkDate.getMonth(), bulkDate.getDate());
+    const endOfDate = new Date(bulkDate.getFullYear(), bulkDate.getMonth(), bulkDate.getDate(), 23, 59, 59, 999);
+
+    for (const entry of entries) {
+      const { workerId, attendanceStatus, dailyWage, workDetails, createdBy } = entry;
+      if (!workerId || !attendanceStatus) continue;
+
+      let dbEntry = await DailyWorkEntry.findOne({
+        workerId,
+        date: { $gte: startOfDate, $lte: endOfDate }
+      });
+
+      const calculatedWage = (attendanceStatus === 'Absent' || attendanceStatus === 'Leave') ? 0 : Number(dailyWage || 0);
+
+      if (dbEntry) {
+        dbEntry.attendance = attendanceStatus;
+        dbEntry.dailyWage = calculatedWage;
+        dbEntry.workDetails = workDetails ? workDetails.trim() : '';
+        if (createdBy) dbEntry.createdBy = createdBy.trim();
+        await dbEntry.save();
+      } else {
+        await DailyWorkEntry.create({
+          workerId,
+          date: startOfDate,
+          attendance: attendanceStatus,
+          dailyWage: calculatedWage,
+          workDetails: workDetails ? workDetails.trim() : '',
+          createdBy: createdBy ? createdBy.trim() : 'Admin'
+        });
+      }
+    }
+
+    res.json({ message: 'Bulk attendance saved successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createWorker,
   getWorkers,
@@ -580,5 +658,7 @@ module.exports = {
   deleteSalaryPayment,
   assignWork,
   saveAttendance,
-  getPaymentSummary
+  getPaymentSummary,
+  getDailyEntriesForDate,
+  saveBulkAttendance
 };

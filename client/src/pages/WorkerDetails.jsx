@@ -6,9 +6,9 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../context/NotificationContext';
 import { 
-  ArrowLeft, Calendar, DollarSign, Briefcase, Phone, MapPin, 
-  Plus, Edit2, Trash2, Search, SlidersHorizontal, ToggleLeft, ToggleRight,
-  TrendingUp, CreditCard, Clock, FileText, CheckCircle, XCircle, AlertCircle
+  ArrowLeft, Calendar, Briefcase, Phone, MapPin, 
+  Plus, Edit2, Trash2, ToggleLeft, ToggleRight,
+  CreditCard, Clock, FileText, AlertCircle
 } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -68,8 +68,9 @@ const WorkerDetails = () => {
 
   const worker = data?.worker;
   const stats = data?.stats;
-  const entries = data?.entries || [];
-  const payments = data?.payments || [];
+
+  const entries = useMemo(() => data?.entries || [], [data?.entries]);
+  const payments = useMemo(() => data?.payments || [], [data?.payments]);
 
   // Initialize Profile form when worker details load
   React.useEffect(() => {
@@ -119,18 +120,6 @@ const WorkerDetails = () => {
     onError: (err) => toast.error(err.response?.data?.message || 'Error toggling worker status')
   });
 
-  const deleteWorkerMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.delete(`/workers/${id}`);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: KEYS.WORKERS });
-      toast.success('Worker and history permanently deleted.');
-      navigate('/workers');
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Error deleting worker')
-  });
 
   const dailyEntryMutation = useMutation({
     mutationFn: async ({ entryData, entryId }) => {
@@ -309,12 +298,6 @@ const WorkerDetails = () => {
     toggleStatusMutation.mutate(newStatus);
   };
 
-  // Delete worker confirm
-  const handleDeleteWorker = () => {
-    if (window.confirm('WARNING: Deleting a worker will permanently erase their entire attendance and payment history! This cannot be undone. Are you sure you want to proceed?')) {
-      deleteWorkerMutation.mutate();
-    }
-  };
 
   // Delete daily entry confirm
   const handleDeleteEntry = (entryId) => {
@@ -461,9 +444,6 @@ const WorkerDetails = () => {
               ) : (
                 <><ToggleLeft size={18}/> Activate</>
               )}
-            </button>
-            <button className="btn btn-outline-danger" onClick={handleDeleteWorker}>
-              <Trash2 size={16}/> Delete
             </button>
           </div>
         </div>
@@ -899,9 +879,10 @@ const WorkerDetails = () => {
                         className="form-control-modern w-100"
                         value={entryForm.dailyWage}
                         onChange={(e) => setEntryForm({ ...entryForm, dailyWage: e.target.value })}
+                        disabled={entryForm.attendance === 'Absent' || entryForm.attendance === 'Leave'}
                         required
                       />
-                      <span className="small text-muted">Defaults by status. Can override manually.</span>
+                      <span className="small text-muted">{entryForm.attendance === 'Absent' || entryForm.attendance === 'Leave' ? 'Wage is ₹0 for absent/leave status.' : 'Defaults by status. Can override manually.'}</span>
                     </div>
 
                     <div className="col-12 col-sm-6">
