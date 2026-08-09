@@ -7,13 +7,23 @@ import toast from 'react-hot-toast';
 import { useNotifications } from '../context/NotificationContext';
 import { 
   Plus, Search, Users, UserCheck, Coins, DollarSign, Briefcase, 
-  AlertCircle, Eye, SlidersHorizontal, ArrowUpDown
+  AlertCircle, Eye, SlidersHorizontal, ArrowUpDown, CheckCircle, CreditCard
 } from 'lucide-react';
 
 const WorkerManagement = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
+
+  // Fetch Workers
+  const { data: workers = [], isLoading, isError } = useQuery({
+    queryKey: KEYS.WORKERS,
+    queryFn: fetchWorkers
+  });
+
+  if (isError) {
+    toast.error('Failed to load workers data');
+  }
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,15 +45,221 @@ const WorkerManagement = () => {
     enteredBy: 'Admin'
   });
 
-  // Fetch Workers
-  const { data: workers = [], isLoading, isError } = useQuery({
-    queryKey: KEYS.WORKERS,
-    queryFn: fetchWorkers
+  // Assign Work Form State
+  const [showAssignWorkModal, setShowAssignWorkModal] = useState(false);
+  const [assignWorkForm, setAssignWorkForm] = useState({
+    workerId: '',
+    workName: '',
+    workDate: new Date().toISOString().split('T')[0],
+    createdBy: 'Admin'
   });
 
-  if (isError) {
-    toast.error('Failed to load workers data');
-  }
+  // Attendance Form State
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [attendanceForm, setAttendanceForm] = useState({
+    workerId: '',
+    date: new Date().toISOString().split('T')[0],
+    attendance: 'Present',
+    dailySalary: '',
+    createdBy: 'Admin'
+  });
+
+  // Payment Table State
+  const [showPaymentTableModal, setShowPaymentTableModal] = useState(false);
+  const [paymentTableMonth, setPaymentTableMonth] = useState(new Date().getMonth());
+  const [paymentTableYear, setPaymentTableYear] = useState(new Date().getFullYear());
+
+  // Make Payment Form State
+  const [showMakePaymentModal, setShowMakePaymentModal] = useState(false);
+  const [selectedWorkerForPayment, setSelectedWorkerForPayment] = useState(null);
+  const [paymentForm, setPaymentForm] = useState({
+    amount: '',
+    paymentType: 'Cash',
+    paymentDate: new Date().toISOString().split('T')[0],
+    notes: '',
+    createdBy: 'Admin'
+  });
+
+  // active workers list
+  const activeWorkers = React.useMemo(() => workers.filter(w => w.status === 'Active'), [workers]);
+
+  const resetAssignWorkForm = () => {
+    setAssignWorkForm({
+      workerId: activeWorkers[0]?._id || '',
+      workName: '',
+      workDate: new Date().toISOString().split('T')[0],
+      createdBy: 'Admin'
+    });
+  };
+
+  const resetAttendanceForm = () => {
+    setAttendanceForm({
+      workerId: activeWorkers[0]?._id || '',
+      date: new Date().toISOString().split('T')[0],
+      attendance: 'Present',
+      dailySalary: activeWorkers[0]?.defaultDailyWage || '',
+      createdBy: 'Admin'
+    });
+  };
+
+  const handleAttendanceWorkerChange = (e) => {
+    const wId = e.target.value;
+    const selectedWorker = activeWorkers.find(w => w._id === wId);
+    setAttendanceForm(prev => ({
+      ...prev,
+      workerId: wId,
+      dailySalary: prev.attendance === 'Present' && selectedWorker ? selectedWorker.defaultDailyWage : 0
+    }));
+  };
+
+  const handleAttendanceStatusChange = (status) => {
+    const selectedWorker = activeWorkers.find(w => w._id === attendanceForm.workerId);
+    setAttendanceForm(prev => ({
+      ...prev,
+      attendance: status,
+      dailySalary: status === 'Present' && selectedWorker ? selectedWorker.defaultDailyWage : 0
+    }));
+  };
+
+  // Queries & Mutations for new workflows
+  const { data: paymentSummaries = [], refetch: refetchPaymentSummary, isLoading: isPaymentSummaryLoading } = useQuery({
+    queryKey: ['payment-summary', paymentTableMonth, paymentTableYear],
+    queryFn: async () => {
+      const response = await api.get(`/workers/payment-summary?month=${paymentTableMonth}&year=${paymentTableYear}`);
+      return response.data;
+    },
+    enabled: showPaymentTableModal
+  });
+
+  const assignWorkMutation = useMutation({
+    mutationFn: async (payload) => {
+      const response = await api.post('/workers/assignments', payload);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: KEYS.WORKERS });
+      toast.success(data.message || 'Work assigned successfully!');
+      addNotification({
+        title: 'Work Assigned',
+        message: `Assigned "${data.assignment.workName}" to worker.`,
+        type: 'success'
+      });
+      setShowAssignWorkModal(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Error assigning work');
+    }
+  });
+
+  const saveAttendanceMutation = useMutation({
+    mutationFn: async (payload) => {
+      const response = await api.post('/workers/attendance', payload);
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: KEYS.WORKERS });
+      toast.success(data.message || 'Attendance saved successfully!');
+      addNotification({
+        title: 'Attendance Saved',
+        message: `Saved attendance for worker on ${new Date(variables.date).toLocaleDateString()}.`,
+        type: 'success'
+      });
+      setShowAttendanceModal(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Error saving attendance');
+    }
+  });
+
+  const makePaymentMutation = useMutation({
+    mutationFn: async ({ workerId, paymentData }) => {
+      const response = await api.post(`/workers/${workerId}/payments`, paymentData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: KEYS.WORKERS });
+      refetchPaymentSummary();
+      toast.success('Payment recorded successfully!');
+      addNotification({
+        title: 'Payment Recorded',
+        message: `Recorded payment of ₹${paymentForm.amount} for worker.`,
+        type: 'success'
+      });
+      setShowMakePaymentModal(false);
+      setShowPaymentTableModal(true); // reopen summaries table
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Error recording payment');
+    }
+  });
+
+  const handleAssignWorkSubmit = (e) => {
+    e.preventDefault();
+    if (!assignWorkForm.workerId) return toast.error('Please select a worker');
+    if (!assignWorkForm.workName.trim()) return toast.error('Work name is required');
+    assignWorkMutation.mutate(assignWorkForm);
+  };
+
+  const handleAttendanceSubmit = (e) => {
+    e.preventDefault();
+    if (!attendanceForm.workerId) return toast.error('Please select a worker');
+    if (attendanceForm.attendance === 'Present' && (attendanceForm.dailySalary === '' || Number(attendanceForm.dailySalary) < 0)) {
+      return toast.error('Please enter a valid daily salary');
+    }
+    saveAttendanceMutation.mutate({
+      ...attendanceForm,
+      dailySalary: Number(attendanceForm.dailySalary || 0)
+    });
+  };
+
+  const handleMakePaymentSubmit = (e) => {
+    e.preventDefault();
+    const amount = Number(paymentForm.amount);
+    if (!amount || amount <= 0) {
+      return toast.error('Payment amount must be greater than ₹0');
+    }
+    if (amount > selectedWorkerForPayment.pendingAmount) {
+      return toast.error(`Payment amount cannot exceed pending salary of ₹${selectedWorkerForPayment.pendingAmount}`);
+    }
+    makePaymentMutation.mutate({
+      workerId: selectedWorkerForPayment.workerId,
+      paymentData: {
+        paymentDate: paymentForm.paymentDate,
+        amount,
+        paymentMethod: paymentForm.paymentType,
+        notes: paymentForm.notes
+      }
+    });
+  };
+
+  const handleOpenMakePayment = (summary) => {
+    setSelectedWorkerForPayment(summary);
+    setPaymentForm({
+      amount: summary.pendingAmount,
+      paymentType: 'Cash',
+      paymentDate: new Date().toISOString().split('T')[0],
+      notes: '',
+      createdBy: 'Admin'
+    });
+    setShowMakePaymentModal(true);
+    setShowPaymentTableModal(false);
+  };
+
+  const monthsList = [
+    'January', 'February', 'March', 'April', 'May', 'June', 
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const yearsList = React.useMemo(() => {
+    const list = [];
+    const current = new Date().getFullYear();
+    for (let y = current - 5; y <= current + 2; y++) {
+      list.push(y);
+    }
+    return list;
+  }, []);
+
+
 
   // Mutation to Add Worker
   const addWorkerMutation = useMutation({
@@ -166,6 +382,51 @@ const WorkerManagement = () => {
         <button className="btn-primary-modern" onClick={() => setShowAddModal(true)}>
           <Plus size={20} /> Add Worker
         </button>
+      </div>
+
+      {/* Action Cards */}
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-4">
+          <div className="saas-card cursor-pointer hover-card border-top border-4 border-primary p-4 h-100 d-flex flex-column justify-content-between" onClick={() => { resetAssignWorkForm(); setShowAssignWorkModal(true); }}>
+            <div>
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <div className="bg-primary bg-opacity-10 text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                  <Briefcase size={20} />
+                </div>
+                <h5 className="fw-bold m-0 text-primary">Assign Work</h5>
+              </div>
+              <p className="text-muted small m-0">Assign work to a worker and automatically record attendance.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-md-4">
+          <div className="saas-card cursor-pointer hover-card border-top border-4 border-success p-4 h-100 d-flex flex-column justify-content-between" onClick={() => { resetAttendanceForm(); setShowAttendanceModal(true); }}>
+            <div>
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <div className="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                  <CheckCircle size={20} />
+                </div>
+                <h5 className="fw-bold m-0 text-success">Attendance</h5>
+              </div>
+              <p className="text-muted small m-0">Mark a worker as Present or Absent and manage daily salary.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-md-4">
+          <div className="saas-card cursor-pointer hover-card border-top border-4 border-warning p-4 h-100 d-flex flex-column justify-content-between" onClick={() => { setShowPaymentTableModal(true); refetchPaymentSummary(); }}>
+            <div>
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <div className="bg-warning bg-opacity-10 text-warning rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                  <CreditCard size={20} />
+                </div>
+                <h5 className="fw-bold m-0 text-warning">Payment</h5>
+              </div>
+              <p className="text-muted small m-0">View pending worker payments and record completed payments.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -505,6 +766,372 @@ const WorkerManagement = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Work Modal */}
+      {showAssignWorkModal && (
+        <div className="modal fade show d-block animate-fade-in" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg">
+              <div className="modal-header bg-white border-bottom">
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <Briefcase size={20} className="text-primary" /> Assign Work
+                </h5>
+                <button type="button" className="btn-close" onClick={() => setShowAssignWorkModal(false)}></button>
+              </div>
+              <form onSubmit={handleAssignWorkSubmit}>
+                <div className="modal-body p-4 bg-light">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <label className="form-label">Worker <span className="text-danger">*</span></label>
+                      <select
+                        className="form-select form-control-modern w-100"
+                        value={assignWorkForm.workerId}
+                        onChange={(e) => setAssignWorkForm({ ...assignWorkForm, workerId: e.target.value })}
+                        required
+                      >
+                        <option value="" disabled>Select Worker</option>
+                        {activeWorkers.map(w => (
+                          <option key={w._id} value={w._id}>{w.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">Work Name <span className="text-danger">*</span></label>
+                      <input
+                        type="text"
+                        className="form-control-modern w-100"
+                        placeholder="e.g. Cleaning cages"
+                        value={assignWorkForm.workName}
+                        onChange={(e) => setAssignWorkForm({ ...assignWorkForm, workName: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">Date <span className="text-danger">*</span></label>
+                      <input
+                        type="date"
+                        className="form-control-modern w-100"
+                        value={assignWorkForm.workDate}
+                        onChange={(e) => setAssignWorkForm({ ...assignWorkForm, workDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer bg-white border-top">
+                  <button type="button" className="btn btn-light border fw-medium" onClick={() => setShowAssignWorkModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary-modern fw-medium" disabled={assignWorkMutation.isPending}>
+                    {assignWorkMutation.isPending ? 'Assigning...' : 'Assign Work'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attendance Modal */}
+      {showAttendanceModal && (
+        <div className="modal fade show d-block animate-fade-in" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg">
+              <div className="modal-header bg-white border-bottom">
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <CheckCircle size={20} className="text-success" /> Attendance
+                </h5>
+                <button type="button" className="btn-close" onClick={() => setShowAttendanceModal(false)}></button>
+              </div>
+              <form onSubmit={handleAttendanceSubmit}>
+                <div className="modal-body p-4 bg-light">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <label className="form-label">Worker <span className="text-danger">*</span></label>
+                      <select
+                        className="form-select form-control-modern w-100"
+                        value={attendanceForm.workerId}
+                        onChange={handleAttendanceWorkerChange}
+                        required
+                      >
+                        <option value="" disabled>Select Worker</option>
+                        {activeWorkers.map(w => (
+                          <option key={w._id} value={w._id}>{w.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">Date <span className="text-danger">*</span></label>
+                      <input
+                        type="date"
+                        className="form-control-modern w-100"
+                        value={attendanceForm.date}
+                        onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label d-block">Attendance <span className="text-danger">*</span></label>
+                      <div className="d-flex gap-4 mt-2">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="attendanceStatus"
+                            id="statusPresent"
+                            value="Present"
+                            checked={attendanceForm.attendance === 'Present'}
+                            onChange={() => handleAttendanceStatusChange('Present')}
+                          />
+                          <label className="form-check-label" htmlFor="statusPresent">Present</label>
+                        </div>
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="attendanceStatus"
+                            id="statusAbsent"
+                            value="Absent"
+                            checked={attendanceForm.attendance === 'Absent'}
+                            onChange={() => handleAttendanceStatusChange('Absent')}
+                          />
+                          <label className="form-check-label" htmlFor="statusAbsent">Absent</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">Daily Salary (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control-modern w-100"
+                        value={attendanceForm.dailySalary}
+                        onChange={(e) => setAttendanceForm({ ...attendanceForm, dailySalary: e.target.value })}
+                        disabled={attendanceForm.attendance === 'Absent'}
+                        placeholder={attendanceForm.attendance === 'Absent' ? '0' : 'Enter wage'}
+                        required={attendanceForm.attendance === 'Present'}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer bg-white border-top">
+                  <button type="button" className="btn btn-light border fw-medium" onClick={() => setShowAttendanceModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-success fw-medium animate-fade-in" style={{ backgroundColor: 'var(--secondary)', borderColor: 'var(--secondary)' }} disabled={saveAttendanceMutation.isPending}>
+                    {saveAttendanceMutation.isPending ? 'Saving...' : 'Save Attendance'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Summary Table Modal */}
+      {showPaymentTableModal && (
+        <div className="modal fade show d-block animate-fade-in" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg" style={{ maxWidth: '1200px' }}>
+            <div className="modal-content border-0 shadow-lg">
+              <div className="modal-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <CreditCard size={20} className="text-warning" /> Pending Payments
+                </h5>
+                <div className="d-flex align-items-center gap-2">
+                  <select
+                    className="form-select form-select-sm form-control-modern py-1"
+                    style={{ width: '130px' }}
+                    value={paymentTableMonth}
+                    onChange={(e) => setPaymentTableMonth(Number(e.target.value))}
+                  >
+                    {monthsList.map((m, idx) => (
+                      <option key={m} value={idx}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="form-select form-select-sm form-control-modern py-1"
+                    style={{ width: '90px' }}
+                    value={paymentTableYear}
+                    onChange={(e) => setPaymentTableYear(Number(e.target.value))}
+                  >
+                    {yearsList.map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                  <button type="button" className="btn-close ms-2" onClick={() => setShowPaymentTableModal(false)}></button>
+                </div>
+              </div>
+              <div className="modal-body p-4 bg-light">
+                {isPaymentSummaryLoading ? (
+                  <div className="text-center py-4">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                ) : paymentSummaries.length === 0 ? (
+                  <div className="text-center py-4 text-muted">
+                    No payment records available.
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>Worker</th>
+                          <th>Period/Date</th>
+                          <th className="text-end">Days Worked</th>
+                          <th className="text-end">Salary Earned</th>
+                          <th className="text-end">Amount Paid</th>
+                          <th className="text-end">Pending Amount</th>
+                          <th>Status</th>
+                          <th className="text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paymentSummaries.map((summary) => (
+                          <tr key={summary.workerId}>
+                            <td className="fw-bold">{summary.workerName}</td>
+                            <td>{summary.period}</td>
+                            <td className="text-end">{summary.daysWorked}</td>
+                            <td className="text-end">₹{summary.salaryEarned.toLocaleString('en-IN')}</td>
+                            <td className="text-end">₹{summary.amountPaid.toLocaleString('en-IN')}</td>
+                            <td className="text-end fw-bold text-danger">₹{summary.pendingAmount.toLocaleString('en-IN')}</td>
+                            <td>
+                              <span className={`badge-modern ${summary.pendingAmount > 0 ? 'badge-warning' : 'badge-success'}`}>
+                                {summary.pendingAmount > 0 ? 'Pending' : 'Completed'}
+                              </span>
+                            </td>
+                            <td className="text-center">
+                              {summary.pendingAmount > 0 ? (
+                                <button className="btn btn-sm btn-primary-modern py-1 px-3" onClick={() => handleOpenMakePayment(summary)}>
+                                  Make Payment
+                                </button>
+                              ) : (
+                                <span className="text-muted small">View Only</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-light border fw-medium" onClick={() => setShowPaymentTableModal(false)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Make Payment Form Modal */}
+      {showMakePaymentModal && selectedWorkerForPayment && (
+        <div className="modal fade show d-block animate-fade-in" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg">
+              <div className="modal-header bg-white border-bottom">
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <CreditCard size={20} className="text-success" /> Make Payment
+                </h5>
+                <button type="button" className="btn-close" onClick={() => { setShowMakePaymentModal(false); setShowPaymentTableModal(true); }}></button>
+              </div>
+              <form onSubmit={handleMakePaymentSubmit}>
+                <div className="modal-body p-4 bg-light">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <label className="form-label">Worker</label>
+                      <input
+                        type="text"
+                        className="form-control-modern w-100 bg-white"
+                        value={selectedWorkerForPayment.workerName}
+                        disabled
+                      />
+                    </div>
+
+                    <div className="col-6">
+                      <label className="form-label">Pending Amount</label>
+                      <input
+                        type="text"
+                        className="form-control-modern w-100 bg-white text-danger fw-bold"
+                        value={`₹${selectedWorkerForPayment.pendingAmount.toLocaleString('en-IN')}`}
+                        disabled
+                      />
+                    </div>
+
+                    <div className="col-6">
+                      <label className="form-label">Remaining Balance</label>
+                      <input
+                        type="text"
+                        className="form-control-modern w-100 bg-white text-success fw-bold"
+                        value={`₹${(Math.max(0, selectedWorkerForPayment.pendingAmount - Number(paymentForm.amount || 0))).toLocaleString('en-IN')}`}
+                        disabled
+                      />
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">Payment Amount (₹) <span className="text-danger">*</span></label>
+                      <input
+                        type="number"
+                        min="1"
+                        max={selectedWorkerForPayment.pendingAmount}
+                        className="form-control-modern w-100"
+                        value={paymentForm.amount}
+                        onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label">Payment Type <span className="text-danger">*</span></label>
+                      <select
+                        className="form-select form-control-modern w-100"
+                        value={paymentForm.paymentType}
+                        onChange={(e) => setPaymentForm({ ...paymentForm, paymentType: e.target.value })}
+                        required
+                      >
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label">Payment Date <span className="text-danger">*</span></label>
+                      <input
+                        type="date"
+                        className="form-control-modern w-100"
+                        value={paymentForm.paymentDate}
+                        onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">Notes <span className="text-muted">(Optional)</span></label>
+                      <textarea
+                        rows="2"
+                        className="form-control-modern w-100"
+                        placeholder="Add transaction notes..."
+                        value={paymentForm.notes}
+                        onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer bg-white border-top">
+                  <button type="button" className="btn btn-light border fw-medium" onClick={() => { setShowMakePaymentModal(false); setShowPaymentTableModal(true); }}>Back</button>
+                  <button type="submit" className="btn btn-primary-modern fw-medium" disabled={makePaymentMutation.isPending}>
+                    {makePaymentMutation.isPending ? 'Processing...' : 'Make Payment'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

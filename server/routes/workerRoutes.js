@@ -13,13 +13,15 @@ const {
   updateSalaryPayment,
   deleteSalaryPayment,
   assignWork,
-  saveAttendance
+  saveAttendance,
+  getPaymentSummary
 } = require('../controllers/workerController');
 
 router.route('/')
   .post(createWorker)
   .get(getWorkers);
 
+router.get('/payment-summary', getPaymentSummary);
 router.post('/assignments', assignWork);
 router.post('/attendance', saveAttendance);
 

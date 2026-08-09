@@ -517,6 +517,55 @@ const saveAttendance = async (req, res) => {
   }
 };
 
+// @desc    Get payment summary for all workers for a specific month and year
+// @route   GET /api/workers/payment-summary
+const getPaymentSummary = async (req, res) => {
+  try {
+    const month = req.query.month !== undefined ? Number(req.query.month) : new Date().getMonth();
+    const year = req.query.year !== undefined ? Number(req.query.year) : new Date().getFullYear();
+
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
+
+    const workers = await Worker.find({});
+    
+    const summary = await Promise.all(workers.map(async (worker) => {
+      const stats = await calculateWorkerStats(worker._id);
+      
+      const monthEntries = await DailyWorkEntry.find({
+        workerId: worker._id,
+        date: { $gte: startOfMonth, $lte: endOfMonth }
+      });
+
+      const monthPayments = await SalaryPayment.find({
+        workerId: worker._id,
+        paymentDate: { $gte: startOfMonth, $lte: endOfMonth }
+      });
+
+      const daysWorked = monthEntries.filter(e => e.attendance === 'Present' || e.attendance === 'Half Day').length;
+      const salaryEarned = monthEntries.reduce((acc, curr) => acc + (curr.dailyWage || 0), 0);
+      const amountPaid = monthPayments.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+      
+      const pendingAmount = stats.outstandingSalary;
+
+      return {
+        workerId: worker._id,
+        workerName: worker.name,
+        period: `${new Date(year, month).toLocaleString('default', { month: 'short' })} ${year}`,
+        daysWorked,
+        salaryEarned,
+        amountPaid,
+        pendingAmount,
+        status: pendingAmount > 0 ? 'Pending' : 'Completed'
+      };
+    }));
+
+    res.json(summary);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createWorker,
   getWorkers,
@@ -530,5 +579,6 @@ module.exports = {
   updateSalaryPayment,
   deleteSalaryPayment,
   assignWork,
-  saveAttendance
+  saveAttendance,
+  getPaymentSummary
 };
