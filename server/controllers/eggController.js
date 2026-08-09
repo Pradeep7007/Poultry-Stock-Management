@@ -42,8 +42,24 @@ const createEggEntry = async (req, res) => {
 
     const productionPercentage = Number(((eggsProduced / batch.aliveHens) * 100).toFixed(2));
 
-    if ((eggsSold + damagedEggs) > eggsProduced) {
-      return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed eggs produced today.' });
+    const stockStats = await EggEntry.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalProduced: { $sum: '$eggsProduced' },
+          totalSold: { $sum: '$eggsSold' },
+          totalDamaged: { $sum: '$damagedEggs' }
+        }
+      }
+    ]);
+    
+    let currentStock = 0;
+    if (stockStats.length > 0) {
+      currentStock = stockStats[0].totalProduced - stockStats[0].totalSold - stockStats[0].totalDamaged;
+    }
+
+    if ((eggsSold + damagedEggs) > (eggsProduced + currentStock)) {
+      return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed eggs produced today plus available stock.' });
     }
 
     const salesAmount = eggsSold * eggPrice;
@@ -126,8 +142,25 @@ const updateEggEntry = async (req, res) => {
       const eggsSold = req.body.eggsSold !== undefined ? Number(req.body.eggsSold) : entry.eggsSold;
       const damagedEggs = req.body.damagedEggs !== undefined ? Number(req.body.damagedEggs) : (entry.damagedEggs || 0);
 
-      if ((eggsSold + damagedEggs) > eggsProduced) {
-        return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed eggs produced today.' });
+      const stockStats = await EggEntry.aggregate([
+        { $match: { _id: { $ne: entry._id } } },
+        {
+          $group: {
+            _id: null,
+            totalProduced: { $sum: '$eggsProduced' },
+            totalSold: { $sum: '$eggsSold' },
+            totalDamaged: { $sum: '$damagedEggs' }
+          }
+        }
+      ]);
+      
+      let currentStock = 0;
+      if (stockStats.length > 0) {
+        currentStock = stockStats[0].totalProduced - stockStats[0].totalSold - stockStats[0].totalDamaged;
+      }
+
+      if ((eggsSold + damagedEggs) > (eggsProduced + currentStock)) {
+        return res.status(400).json({ message: 'Eggs sold and damaged cannot exceed eggs produced today plus available stock.' });
       }
 
       const productionPercentage = Number(((eggsProduced / aliveHens) * 100).toFixed(2));

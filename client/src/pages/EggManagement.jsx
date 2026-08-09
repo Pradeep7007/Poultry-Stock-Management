@@ -92,8 +92,17 @@ const EggManagement = () => {
       const eggsSold = Number(formData.eggsSold);
       const damagedEggs = Number(formData.damagedEggs) || 0;
 
-      if ((eggsSold + damagedEggs) > eggsProduced) {
-        toast.error('Eggs sold and damaged cannot exceed eggs produced today.');
+      let currentStock = entries.reduce((acc, curr) => acc + curr.eggsProduced - curr.eggsSold - (curr.damagedEggs || 0), 0);
+      
+      if (isEditing) {
+        const oldEntry = entries.find(e => e._id === formData.id);
+        if (oldEntry) {
+          currentStock -= (oldEntry.eggsProduced - oldEntry.eggsSold - (oldEntry.damagedEggs || 0));
+        }
+      }
+
+      if ((eggsSold + damagedEggs) > (eggsProduced + currentStock)) {
+        toast.error('Eggs sold and damaged cannot exceed eggs produced today plus available stock.');
         setIsSubmitting(false);
         return;
       }
@@ -238,28 +247,6 @@ const EggManagement = () => {
         </button>
       </div>
 
-      <div className="row g-3 mb-4">
-        {[
-          { title: 'Total Produced', value: totalProduced.toLocaleString(), icon: <Egg size={20} />, color: 'primary' },
-          { title: 'Total Profit (₹)', value: `₹${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <TrendingUp size={20} />, color: 'warning' },
-          { title: 'Available Stock', value: availableStock.toLocaleString(), icon: <Package size={20} />, color: 'success' },
-          { title: 'Total Sold', value: totalSold.toLocaleString(), icon: <ShoppingCart size={20} />, color: 'info' },
-          { title: 'Total Damaged', value: totalDamaged.toLocaleString(), icon: <AlertTriangle size={20} />, color: 'danger' }
-        ].map((stat, idx) => (
-          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
-            <div className="saas-card p-3 d-flex align-items-center gap-3">
-              <div className={`bg-${stat.color} bg-opacity-10 text-${stat.color} rounded-circle p-3`}>
-                {stat.icon}
-              </div>
-              <div>
-                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
-                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {showForm && (
         <div className="saas-card p-4 mb-4 animate-fade-in border-start border-primary border-4">
           <h5 className="fw-bold mb-4 d-flex align-items-center gap-2">
@@ -319,6 +306,90 @@ const EggManagement = () => {
           </form>
         </div>
       )}
+
+      <div className="row g-3 mb-4">
+        {[
+          { title: 'Total Produced', value: totalProduced.toLocaleString(), icon: <Egg size={20} />, color: 'primary' },
+          { title: 'Total Profit (₹)', value: `₹${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <TrendingUp size={20} />, color: 'warning' },
+          { title: 'Available Stock', value: availableStock.toLocaleString(), icon: <Package size={20} />, color: 'success' },
+          { title: 'Total Sold', value: totalSold.toLocaleString(), icon: <ShoppingCart size={20} />, color: 'info' },
+          { title: 'Total Damaged', value: totalDamaged.toLocaleString(), icon: <AlertTriangle size={20} />, color: 'danger' }
+        ].map((stat, idx) => (
+          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
+            <div className="saas-card p-3 d-flex align-items-center gap-3">
+              <div className={`bg-${stat.color} bg-opacity-10 text-${stat.color} rounded-circle p-3`}>
+                {stat.icon}
+              </div>
+              <div>
+                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
+                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      
+
+      {/* {showForm && (
+        <div className="saas-card p-4 mb-4 animate-fade-in border-start border-primary border-4">
+          <h5 className="fw-bold mb-4 d-flex align-items-center gap-2">
+            <Edit2 size={18} className="text-primary" /> 
+            {isEditing ? 'Edit Record' : 'Create New Record'}
+          </h5>
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3 mb-4">
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Select Batch <span className="text-danger">*</span></label>
+                <select className="form-select form-control-modern w-100" name="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required>
+                  <option value="">-- Select Active Batch --</option>
+                  {activeBatches.map(b => (
+                    <option key={b._id} value={b.name}>{b.name} ({formatDate(b.startDate)})</option>
+                  ))}
+                  {isEditing && !activeBatches.find(b => b.name === formData.name) && (
+                    <option value={formData.name}>{formData.name} (Archived)</option>
+                  )}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Date <span className="text-danger">*</span></label>
+                <input type="date" className="form-control-modern w-100" name="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Price Per Egg (₹) <span className="text-danger">*</span></label>
+                <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="eggPrice" value={formData.eggPrice} onChange={e => setFormData({...formData, eggPrice: e.target.value})} required />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Entered By <span className="text-danger">*</span></label>
+                <input type="text" className="form-control-modern w-100" name="enteredBy" value={formData.enteredBy} onChange={e => setFormData({...formData, enteredBy: e.target.value})} required placeholder="e.g. Anitha Devi" />
+              </div>
+              
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Eggs Produced <span className="text-danger">*</span></label>
+                <input type="number" min="0" className="form-control-modern w-100" name="eggsProduced" value={formData.eggsProduced} onChange={e => setFormData({...formData, eggsProduced: e.target.value})} required />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Eggs Sold <span className="text-danger">*</span></label>
+                <input type="number" min="0" className="form-control-modern w-100" name="eggsSold" value={formData.eggsSold} onChange={e => setFormData({...formData, eggsSold: e.target.value})} required />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted">Damaged Eggs</label>
+                <input type="number" min="0" className="form-control-modern w-100" name="damagedEggs" value={formData.damagedEggs} onChange={e => setFormData({...formData, damagedEggs: e.target.value})} />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label small fw-semibold text-muted text-primary">Estimated Profit Per Egg (₹)</label>
+                <input type="number" min="0" step="0.01" className="form-control-modern w-100 border-primary" name="profitPerEgg" value={formData.profitPerEgg} onChange={e => setFormData({...formData, profitPerEgg: e.target.value})} placeholder="e.g. 1.25" />
+              </div>
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-light fw-medium border" onClick={handleResetForm}>Cancel</button>
+              <button type="submit" className="btn-primary-modern px-4" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : (isEditing ? 'Update Record' : 'Save Record')}
+              </button>
+            </div>
+          </form>
+        </div>
+      )} */}
 
       <div className="saas-card printable-area">
         <div className="p-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
