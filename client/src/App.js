@@ -7,6 +7,9 @@ import EggManagement from './pages/EggManagement';
 import BatchCreation from './pages/BatchCreation';
 import HenManagement from './pages/HenManagement';
 import FeedManagement from './pages/FeedManagement';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient, prefetchAllDashboardData } from './services/queries';
 import VaccineManagement from './pages/VaccineManagement';
 import Layout from './components/Layout';
 
@@ -62,7 +65,7 @@ function App() {
   };
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Toaster position="top-right" toastOptions={{
         style: {
           background: darkMode ? '#1E293B' : '#fff',
@@ -80,7 +83,8 @@ function App() {
           <Route path="/vaccines" element={<ProtectedRoute><VaccineManagement /></ProtectedRoute>} />
         </Routes>
       </div>
-    </>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 

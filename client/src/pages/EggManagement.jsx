@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { KEYS, fetchEggs, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -11,9 +13,7 @@ import {
 import { formatDate } from '../utils/dateFormatter';
 
 const EggManagement = () => {
-  const [entries, setEntries] = useState([]);
-  const [activeBatches, setActiveBatches] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   
@@ -29,51 +29,48 @@ const EggManagement = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const itemsPerPage = 7;
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const results = useQueries({
+    queries: [
+      { queryKey: KEYS.EGGS, queryFn: fetchEggs },
+      { queryKey: KEYS.BATCHES, queryFn: fetchBatches },
+      { queryKey: KEYS.HENS, queryFn: fetchHens }
+    ]
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [eggRes, batchRes, henRes] = await Promise.all([
-        api.get('/eggs'),
-        api.get('/batches'),
-        api.get('/hens')
-      ]);
-      
-      const batches = batchRes.data;
-      const henDeaths = henRes.data;
+  const loading = results.some(r => r.isLoading);
+  const isError = results.some(r => r.isError);
 
-      // Dynamically calculate historical aliveHens and production % for each date
-      const dynamicEntries = eggRes.data.map(entry => {
-        const batch = batches.find(b => b.name === entry.name);
-        if (batch) {
-          const entryDate = new Date(entry.date).toISOString().split('T')[0];
-          // Sum all deaths for this batch up to the entry date
-          const deathsUpToDate = henDeaths.filter(d => 
-            d.batchId === batch._id && new Date(d.date).toISOString().split('T')[0] <= entryDate
-          );
-          const totalDead = deathsUpToDate.reduce((sum, d) => sum + d.deadToday, 0);
-          const aliveHensOnDate = batch.startedHens - totalDead;
-          
-          return {
-            ...entry,
-            aliveHens: aliveHensOnDate > 0 ? aliveHensOnDate : 0,
-            productionPercentage: aliveHensOnDate > 0 ? (entry.eggsProduced / aliveHensOnDate) * 100 : 0
-          };
-        }
-        return entry;
-      });
+  if (isError) {
+    toast.error('Failed to load records');
+  }
 
-      setEntries(dynamicEntries);
-      setActiveBatches(batches.filter(b => b.status === 'Active'));
-    } catch (error) {
-      toast.error('Failed to load records');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const rawEntries = useMemo(() => results[0].data || [], [results[0].data]);
+  const batches = useMemo(() => results[1].data || [], [results[1].data]);
+  const henDeaths = useMemo(() => results[2].data || [], [results[2].data]);
+
+  const entries = useMemo(() => {
+    if (!batches.length || !rawEntries.length) return rawEntries;
+    return rawEntries.map(entry => {
+      const batch = batches.find(b => b.name === entry.name);
+      if (batch) {
+        const entryDate = new Date(entry.date).toISOString().split('T')[0];
+        const deathsUpToDate = henDeaths.filter(d => 
+          d.batchId === batch._id && new Date(d.date).toISOString().split('T')[0] <= entryDate
+        );
+        const totalDead = deathsUpToDate.reduce((sum, d) => sum + d.deadToday, 0);
+        const aliveHensOnDate = batch.startedHens - totalDead;
+        
+        return {
+          ...entry,
+          aliveHens: aliveHensOnDate > 0 ? aliveHensOnDate : 0,
+          productionPercentage: aliveHensOnDate > 0 ? (entry.eggsProduced / aliveHensOnDate) * 100 : 0
+        };
+      }
+      return entry;
+    });
+  }, [rawEntries, batches, henDeaths]);
+
+  const activeBatches = batches.filter(b => b.status === 'Active');
 
   const handleResetForm = () => {
     setFormData({
@@ -84,57 +81,88 @@ const EggManagement = () => {
     setShowForm(false);
   };
 
+  const createMutation = useMutation({
+    mutationFn: (payload) => api.post('/eggs', payload),
+    onSuccess: (res) => {
+      if (res.data.sheetSync === false) {
+        toast.success(res.data.message);
+      } else {
+        toast.success('Entry added successfully!');
+      }
+      queryClient.invalidateQueries({ queryKey: KEYS.EGGS });
+      handleResetForm();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Something went wrong');
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }) => api.put(`/eggs/${id}`, payload),
+    onSuccess: () => {
+      toast.success('Entry updated successfully!');
+      queryClient.invalidateQueries({ queryKey: KEYS.EGGS });
+      handleResetForm();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Something went wrong');
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/eggs/${id}`),
+    onSuccess: () => {
+      toast.success('Record deleted');
+      queryClient.invalidateQueries({ queryKey: KEYS.EGGS });
+    },
+    onError: () => {
+      toast.error('Failed to delete record');
+    }
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      const eggsProduced = Number(formData.eggsProduced);
-      const eggsSold = Number(formData.eggsSold);
-      const damagedEggs = Number(formData.damagedEggs) || 0;
+    const eggsProduced = Number(formData.eggsProduced);
+    const eggsSold = Number(formData.eggsSold);
+    const damagedEggs = Number(formData.damagedEggs) || 0;
 
-      let currentStock = entries.reduce((acc, curr) => acc + curr.eggsProduced - curr.eggsSold - (curr.damagedEggs || 0), 0);
-      
-      if (isEditing) {
-        const oldEntry = entries.find(e => e._id === formData.id);
-        if (oldEntry) {
-          currentStock -= (oldEntry.eggsProduced - oldEntry.eggsSold - (oldEntry.damagedEggs || 0));
-        }
+    let currentStock = entries.reduce((acc, curr) => acc + curr.eggsProduced - curr.eggsSold - (curr.damagedEggs || 0), 0);
+    
+    if (isEditing) {
+      const oldEntry = entries.find(e => e._id === formData.id);
+      if (oldEntry) {
+        currentStock -= (oldEntry.eggsProduced - oldEntry.eggsSold - (oldEntry.damagedEggs || 0));
       }
+    }
 
-      if ((eggsSold + damagedEggs) > (eggsProduced + currentStock)) {
-        toast.error('Eggs sold and damaged cannot exceed eggs produced today plus available stock.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const payload = {
-        name: formData.name,
-        date: formData.date,
-        eggsProduced,
-        eggsSold,
-        damagedEggs,
-        eggPrice: Number(formData.eggPrice),
-        profitPerEgg: formData.profitPerEgg ? Number(formData.profitPerEgg) : 0,
-        enteredBy: formData.enteredBy
-      };
-
-      if (isEditing) {
-        await api.put(`/eggs/${formData.id}`, payload);
-        toast.success('Entry updated successfully!');
-      } else {
-        const res = await api.post('/eggs', payload);
-        if (res.data.sheetSync === false) {
-          toast.success(res.data.message);
-        } else {
-          toast.success('Entry added successfully!');
-        }
-      }
-      handleResetForm();
-      fetchData();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong');
-    } finally {
+    if ((eggsSold + damagedEggs) > (eggsProduced + currentStock)) {
+      toast.error('Eggs sold and damaged cannot exceed eggs produced today plus available stock.');
       setIsSubmitting(false);
+      return;
+    }
+
+    const payload = {
+      name: formData.name,
+      date: formData.date,
+      eggsProduced,
+      eggsSold,
+      damagedEggs,
+      eggPrice: Number(formData.eggPrice),
+      profitPerEgg: formData.profitPerEgg ? Number(formData.profitPerEgg) : 0,
+      enteredBy: formData.enteredBy
+    };
+
+    if (isEditing) {
+      updateMutation.mutate({ id: formData.id, payload });
+    } else {
+      createMutation.mutate(payload);
     }
   };
 
@@ -155,15 +183,9 @@ const EggManagement = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        await api.delete(`/eggs/${id}`);
-        toast.success('Record deleted');
-        fetchData();
-      } catch (error) {
-        toast.error('Failed to delete record');
-      }
+      deleteMutation.mutate(id);
     }
   };
 

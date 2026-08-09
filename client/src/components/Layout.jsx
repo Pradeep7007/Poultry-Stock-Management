@@ -15,6 +15,12 @@ const Layout = ({ children, onLogout, toggleTheme, darkMode }) => {
     };
     
     window.addEventListener('resize', handleResize);
+    
+    // Prefetch all data when layout mounts
+    import('../services/queries').then(({ prefetchAllDashboardData }) => {
+      prefetchAllDashboardData();
+    });
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 

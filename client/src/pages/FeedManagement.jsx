@@ -1,4 +1,6 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState } from 'react';
+import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { KEYS, fetchFeed, fetchEggs, fetchBatches } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -17,10 +19,7 @@ import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 const FeedManagement = () => {
-  const [entries, setEntries] = useState([]);
-  const [eggEntries, setEggEntries] = useState([]);
-  const [activeBatches, setActiveBatches] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -36,27 +35,21 @@ const FeedManagement = () => {
   const itemsPerPage = 5;
   const [chartType, setChartType] = useState('line');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const results = useQueries({
+    queries: [
+      { queryKey: KEYS.FEED, queryFn: fetchFeed },
+      { queryKey: KEYS.EGGS, queryFn: fetchEggs },
+      { queryKey: KEYS.BATCHES, queryFn: fetchBatches }
+    ]
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [feedRes, eggRes, batchRes] = await Promise.all([
-        api.get('/feed'),
-        api.get('/eggs'),
-        api.get('/batches')
-      ]);
-      setEntries(feedRes.data);
-      setEggEntries(eggRes.data);
-      setActiveBatches(batchRes.data.filter(b => b.status === 'Active'));
-    } catch (error) {
-      toast.error('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = results.some(r => r.isLoading);
+  const isError = results.some(r => r.isError);
+  if (isError) toast.error('Failed to load data');
+
+  const entries = results[0].data || [];
+  const eggEntries = results[1].data || [];
+  const activeBatches = (results[2].data || []).filter(b => b.status === 'Active');
 
   const handleResetForm = () => {
     setFormData({ id: '', name: '', date: new Date().toISOString().split('T')[0], feedWeight: '', feedCost: '', feedType: '', supplier: '', enteredBy: '' });
@@ -64,30 +57,51 @@ const FeedManagement = () => {
     setShowForm(false);
   };
 
+  const createMutation = useMutation({
+    mutationFn: (payload) => api.post('/feed', payload),
+    onSuccess: (res) => {
+      if (res.data.sheetSync === false) toast.success(res.data.message);
+      else toast.success('Feed entry added!');
+      queryClient.invalidateQueries({ queryKey: KEYS.FEED });
+      handleResetForm();
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onSettled: () => setIsSubmitting(false)
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }) => api.put(`/feed/${id}`, payload),
+    onSuccess: () => {
+      toast.success('Feed entry updated!');
+      queryClient.invalidateQueries({ queryKey: KEYS.FEED });
+      handleResetForm();
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onSettled: () => setIsSubmitting(false)
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/feed/${id}`),
+    onSuccess: () => {
+      toast.success('Record deleted');
+      queryClient.invalidateQueries({ queryKey: KEYS.FEED });
+    },
+    onError: () => toast.error('Failed to delete record')
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      const payload = {
-        name: formData.name, date: formData.date,
-        feedWeight: Number(formData.feedWeight), feedCost: Number(formData.feedCost),
-        feedType: formData.feedType, supplier: formData.supplier, enteredBy: formData.enteredBy
-      };
+    const payload = {
+      name: formData.name, date: formData.date,
+      feedWeight: Number(formData.feedWeight), feedCost: Number(formData.feedCost),
+      feedType: formData.feedType, supplier: formData.supplier, enteredBy: formData.enteredBy
+    };
 
-      if (isEditing) {
-        await api.put(`/feed/${formData.id}`, payload);
-        toast.success('Feed entry updated!');
-      } else {
-        const res = await api.post('/feed', payload);
-        if (res.data.sheetSync === false) toast.success(res.data.message);
-        else toast.success('Feed entry added!');
-      }
-      handleResetForm();
-      fetchData();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong');
-    } finally {
-      setIsSubmitting(false);
+    if (isEditing) {
+      updateMutation.mutate({ id: formData.id, payload });
+    } else {
+      createMutation.mutate(payload);
     }
   };
 
@@ -102,15 +116,9 @@ const FeedManagement = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        await api.delete(`/feed/${id}`);
-        toast.success('Record deleted');
-        fetchData();
-      } catch (error) {
-        toast.error('Failed to delete record');
-      }
+      deleteMutation.mutate(id);
     }
   };
 

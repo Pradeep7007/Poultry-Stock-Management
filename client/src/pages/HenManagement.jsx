@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { KEYS, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -17,9 +19,7 @@ import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 const HenManagement = () => {
-  const [batches, setBatches] = useState([]);
-  const [deaths, setDeaths] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -41,25 +41,19 @@ const HenManagement = () => {
 
   const [chartType, setChartType] = useState('line');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const results = useQueries({
+    queries: [
+      { queryKey: KEYS.BATCHES, queryFn: fetchBatches },
+      { queryKey: KEYS.HENS, queryFn: fetchHens }
+    ]
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [batchRes, deathRes] = await Promise.all([
-        api.get('/batches'),
-        api.get('/hens')
-      ]);
-      setBatches(batchRes.data);
-      setDeaths(deathRes.data);
-    } catch (error) {
-      toast.error('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = results.some(r => r.isLoading);
+  const isError = results.some(r => r.isError);
+  if (isError) toast.error('Failed to load data');
+
+  const batches = results[0].data || [];
+  const deaths = results[1].data || [];
 
   const handleResetForm = () => {
     setFormData({ id: '', name: '', date: new Date().toISOString().split('T')[0], deadToday: '', enteredBy: '' });
@@ -67,31 +61,54 @@ const HenManagement = () => {
     setShowForm(false);
   };
 
+  const createMutation = useMutation({
+    mutationFn: (payload) => api.post('/hens', payload),
+    onSuccess: (res) => {
+      if (res.data.sheetSync === false) toast.success(res.data.message);
+      else toast.success('Record added successfully!');
+      queryClient.invalidateQueries({ queryKey: KEYS.HENS });
+      queryClient.invalidateQueries({ queryKey: KEYS.BATCHES });
+      handleResetForm();
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onSettled: () => setIsSubmitting(false)
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }) => api.put(`/hens/${id}`, payload),
+    onSuccess: () => {
+      toast.success('Record updated successfully!');
+      queryClient.invalidateQueries({ queryKey: KEYS.HENS });
+      queryClient.invalidateQueries({ queryKey: KEYS.BATCHES });
+      handleResetForm();
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onSettled: () => setIsSubmitting(false)
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: ({ id, type }) => type === 'death' ? api.delete(`/hens/${id}`) : api.delete(`/batches/${id}`),
+    onSuccess: (_, { type }) => {
+      toast.success('Record deleted');
+      queryClient.invalidateQueries({ queryKey: type === 'death' ? KEYS.HENS : KEYS.BATCHES });
+    },
+    onError: () => toast.error('Failed to delete record')
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      const payload = {
-        name: formData.name,
-        date: formData.date,
-        deadToday: Number(formData.deadToday),
-        enteredBy: formData.enteredBy
-      };
+    const payload = {
+      name: formData.name,
+      date: formData.date,
+      deadToday: Number(formData.deadToday),
+      enteredBy: formData.enteredBy
+    };
 
-      if (isEditing) {
-        await api.put(`/hens/${formData.id}`, payload);
-        toast.success('Record updated successfully!');
-      } else {
-        const res = await api.post('/hens', payload);
-        if (res.data.sheetSync === false) toast.success(res.data.message);
-        else toast.success('Record added successfully!');
-      }
-      handleResetForm();
-      fetchData();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong');
-    } finally {
-      setIsSubmitting(false);
+    if (isEditing) {
+      updateMutation.mutate({ id: formData.id, payload });
+    } else {
+      createMutation.mutate(payload);
     }
   };
 
@@ -106,19 +123,9 @@ const HenManagement = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id, type) => {
+  const handleDelete = (id, type) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        if (type === 'death') {
-          await api.delete(`/hens/${id}`);
-        } else {
-          await api.delete(`/batches/${id}`);
-        }
-        toast.success('Record deleted');
-        fetchData();
-      } catch (error) {
-        toast.error('Failed to delete record');
-      }
+      deleteMutation.mutate({ id, type });
     }
   };
 

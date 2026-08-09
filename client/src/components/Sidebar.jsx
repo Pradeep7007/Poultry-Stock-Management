@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Egg, Layers, LogOut, ShoppingBag, Users, Syringe } from 'lucide-react';
+import { prefetchAllDashboardData } from '../services/queries';
 
 const Sidebar = ({ isOpen, onLogout }) => {
   const location = useLocation();
@@ -40,7 +41,7 @@ const Sidebar = ({ isOpen, onLogout }) => {
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <li className="nav-item" key={item.name}>
+              <li className="nav-item" key={item.name} onMouseEnter={() => prefetchAllDashboardData()}>
                 <Link 
                   to={item.path} 
                   className={`nav-link d-flex align-items-center gap-3 rounded px-3 py-2 ${isActive ? 'active' : ''}`}

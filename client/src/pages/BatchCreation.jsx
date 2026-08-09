@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { KEYS } from '../services/queries';
 import './BatchCreation.css';
 
 const BatchCreation = () => {
@@ -38,6 +40,21 @@ const BatchCreation = () => {
     }
   };
 
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: (payload) => api.post('/batches', payload),
+    onSuccess: () => {
+      toast.success('Batch created successfully!');
+      queryClient.invalidateQueries({ queryKey: KEYS.BATCHES });
+      navigate('/hens');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to create batch');
+    },
+    onSettled: () => setIsSubmitting(false)
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
@@ -47,15 +64,7 @@ const BatchCreation = () => {
     }
 
     setIsSubmitting(true);
-    try {
-      await api.post('/batches', formData);
-      toast.success('Batch created successfully!');
-      navigate('/hens');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create batch');
-    } finally {
-      setIsSubmitting(false);
-    }
+    createMutation.mutate(formData);
   };
 
   const handleCancel = () => {

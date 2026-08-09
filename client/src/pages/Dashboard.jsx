@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 // import { Link } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -6,6 +6,8 @@ import {
   TrendingUp, Package, DollarSign, Activity, Egg, Filter, Syringe, Users, Clock, Settings
 } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
+import { useQueries } from '@tanstack/react-query';
+import { KEYS, fetchEggs, fetchVaccines, fetchBatches, fetchFeed, fetchHens } from '../services/queries';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler
 } from 'chart.js';
@@ -14,17 +16,10 @@ import { Line, Bar } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 const Dashboard = () => {
-  const [entries, setEntries] = useState([]);
-  const [vaccines, setVaccines] = useState([]);
-  const [batches, setBatches] = useState([]);
-  const [feeds, setFeeds] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
   const [dateFilter, setDateFilter] = useState('daily');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [showCustom, setShowCustom] = useState(false);
-
 
 const DEFAULT_CHART_CONFIG = [
   {
@@ -101,7 +96,6 @@ const DEFAULT_CHART_CONFIG = [
   }
 ];
 
-
   const [chartConfig, setChartConfig] = useState(() => {
     const saved = localStorage.getItem('dashboardChartConfig');
     if (saved) return JSON.parse(saved);
@@ -110,56 +104,50 @@ const DEFAULT_CHART_CONFIG = [
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [tempConfig, setTempConfig] = useState([...chartConfig]);
   
-  const [henDeaths, setHenDeaths] = useState([]);
+  const results = useQueries({
+    queries: [
+      { queryKey: KEYS.EGGS, queryFn: fetchEggs },
+      { queryKey: KEYS.VACCINES, queryFn: fetchVaccines },
+      { queryKey: KEYS.BATCHES, queryFn: fetchBatches },
+      { queryKey: KEYS.FEED, queryFn: fetchFeed },
+      { queryKey: KEYS.HENS, queryFn: fetchHens }
+    ]
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const loading = results.some(r => r.isLoading);
+  const isError = results.some(r => r.isError);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [eggRes, vaccineRes, batchRes, feedRes, henRes] = await Promise.all([
-        api.get('/eggs'),
-        api.get('/vaccines'),
-        api.get('/batches'),
-        api.get('/feed'),
-        api.get('/hens')
-      ]);
-      
-      const batchesData = batchRes.data;
-      const henDeathsData = henRes.data;
+  if (isError) {
+    toast.error('Failed to fetch dashboard data');
+  }
 
-      const dynamicEntries = eggRes.data.map(entry => {
-        const batch = batchesData.find(b => b.name === entry.name);
-        if (batch) {
-          const entryDate = new Date(entry.date).toISOString().split('T')[0];
-          const deathsUpToDate = henDeathsData.filter(d => 
-            d.batchId === batch._id && new Date(d.date).toISOString().split('T')[0] <= entryDate
-          );
-          const totalDead = deathsUpToDate.reduce((sum, d) => sum + d.deadToday, 0);
-          const aliveHensOnDate = batch.startedHens - totalDead;
-          
-          return {
-            ...entry,
-            aliveHens: aliveHensOnDate > 0 ? aliveHensOnDate : 0,
-            productionPercentage: aliveHensOnDate > 0 ? (entry.eggsProduced / aliveHensOnDate) * 100 : 0
-          };
-        }
-        return entry;
-      });
+  const rawEntries = results[0].data || [];
+  const vaccines = results[1].data || [];
+  const batches = results[2].data || [];
+  const feeds = results[3].data || [];
+  const henDeaths = results[4].data || [];
 
-      setEntries(dynamicEntries);
-      setVaccines(vaccineRes.data);
-      setBatches(batchesData);
-      setFeeds(feedRes.data);
-      setHenDeaths(henDeathsData);
-    } catch (error) {
-      toast.error('Failed to fetch dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const entries = useMemo(() => {
+    if (!batches.length || !rawEntries.length) return rawEntries;
+    return rawEntries.map(entry => {
+      const batch = batches.find(b => b.name === entry.name);
+      if (batch) {
+        const entryDate = new Date(entry.date).toISOString().split('T')[0];
+        const deathsUpToDate = henDeaths.filter(d => 
+          d.batchId === batch._id && new Date(d.date).toISOString().split('T')[0] <= entryDate
+        );
+        const totalDead = deathsUpToDate.reduce((sum, d) => sum + d.deadToday, 0);
+        const aliveHensOnDate = batch.startedHens - totalDead;
+        
+        return {
+          ...entry,
+          aliveHens: aliveHensOnDate > 0 ? aliveHensOnDate : 0,
+          productionPercentage: aliveHensOnDate > 0 ? (entry.eggsProduced / aliveHensOnDate) * 100 : 0
+        };
+      }
+      return entry;
+    });
+  }, [rawEntries, batches, henDeaths]);
 
   const getFilteredData = () => {
     let filtered = [...entries];
