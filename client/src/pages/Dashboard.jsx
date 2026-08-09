@@ -20,7 +20,7 @@ const Dashboard = () => {
   const [feeds, setFeeds] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const [dateFilter, setDateFilter] = useState('monthly');
+  const [dateFilter, setDateFilter] = useState('daily');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [showCustom, setShowCustom] = useState(false);

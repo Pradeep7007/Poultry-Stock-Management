@@ -46,12 +46,15 @@ const createMedicineEntry = async (req, res) => {
       entry.unitType || 'Packet'
     ];
 
-    const sheetResult = await appendToSheet(sheetData, 496930642);
+    const startTime = Date.now();
+    appendToSheet(sheetData, 496930642).then(() => {
+      console.log(`[External API] Google Sheets append took ${Date.now() - startTime} ms`);
+    }).catch(err => console.error(err));
 
     res.status(201).json({ 
       entry, 
-      sheetSync: sheetResult.success,
-      message: sheetResult.success ? 'Entry created successfully' : `Entry saved but Google Sheets failed: ${sheetResult.message}`
+      sheetSync: 'pending',
+      message: 'Entry created successfully'
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -117,8 +120,10 @@ const updateMedicineEntry = async (req, res) => {
         updatedEntry.enteredBy,
         updatedEntry.unitType || 'Packet'
       ];
-      
-      await updateInSheet(oldSheetData, newSheetData, 496930642);
+      const startTime = Date.now();
+      updateInSheet(oldSheetData, newSheetData, 496930642).then(() => {
+        console.log(`[External API] Google Sheets update took ${Date.now() - startTime} ms`);
+      }).catch(err => console.error(err));
       
       res.json(updatedEntry);
     } else {
@@ -152,7 +157,11 @@ const deleteMedicineEntry = async (req, res) => {
       ];
       
       await entry.deleteOne();
-      await deleteFromSheet(oldSheetData, 496930642);
+      
+      const startTime = Date.now();
+      deleteFromSheet(oldSheetData, 496930642).then(() => {
+        console.log(`[External API] Google Sheets delete took ${Date.now() - startTime} ms`);
+      }).catch(err => console.error(err));
       
       res.json({ message: 'Record removed' });
     } else {

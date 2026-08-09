@@ -11,6 +11,15 @@ const medicineRoutes = require('./routes/medicineRoutes');
 connectDB();
 const app = express();
 
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[API] total: ${duration} ms | ${req.method} ${req.originalUrl}`);
+  });
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 

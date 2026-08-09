@@ -126,21 +126,6 @@ if (!content.includes('const [henDeaths, setHenDeaths]')) {
   );`
   );
 }
-
-// ---------------------------------------------------------
-// 3. Do NOT reference undefined henDeathsData
-// ---------------------------------------------------------
-//
-// Your original code had:
-// setFeeds(feedRes.data);
-// setHenDeaths(henDeathsData);
-//
-// henDeathsData does not exist in the supplied script.
-// Replace it with a safe empty array.
-//
-// If you already have a hen-deaths API request elsewhere,
-// replace [] below with that API response.
-//
 content = content.replace(
   /setFeeds\(feedRes\.data\);\s*setHenDeaths\(henDeathsData\);/,
   `setFeeds(feedRes.data);

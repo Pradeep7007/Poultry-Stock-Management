@@ -62,6 +62,9 @@ const eggEntrySchema = mongoose.Schema(
   }
 );
 
+eggEntrySchema.index({ date: -1 });
+eggEntrySchema.index({ name: 1 });
+
 const EggEntry = mongoose.model('EggEntry', eggEntrySchema);
 
 module.exports = EggEntry;

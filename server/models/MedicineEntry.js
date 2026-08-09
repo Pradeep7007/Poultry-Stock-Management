@@ -49,6 +49,13 @@ const MedicineEntrySchema = new mongoose.Schema({
     type: String,
     required: true
   }
-}, { timestamps: true });
+}, {
+  timestamps: true,
+});
 
-module.exports = mongoose.model('MedicineEntry', MedicineEntrySchema);
+MedicineEntrySchema.index({ date: -1 });
+MedicineEntrySchema.index({ batchId: 1 });
+
+const MedicineEntry = mongoose.model('MedicineEntry', MedicineEntrySchema);
+
+module.exports = MedicineEntry;

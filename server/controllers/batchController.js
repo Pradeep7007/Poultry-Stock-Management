@@ -49,7 +49,10 @@ const createBatch = async (req, res) => {
       batch.enteredBy
     ];
 
-    await appendToSheet(sheetData, 'Batch');
+    const startTime = Date.now();
+    appendToSheet(sheetData, 'Batch').then(() => {
+      console.log(`[External API] Google Sheets append took ${Date.now() - startTime} ms`);
+    }).catch(err => console.error(err));
 
     res.status(201).json({ message: 'Batch created successfully', data: batch });
   } catch (error) {

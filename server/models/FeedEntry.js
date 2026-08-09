@@ -10,7 +10,14 @@ const feedEntrySchema = mongoose.Schema(
     supplier: { type: String },
     enteredBy: { type: String, required: true }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model('FeedEntry', feedEntrySchema);
+feedEntrySchema.index({ date: -1 });
+feedEntrySchema.index({ name: 1 });
+
+const FeedEntry = mongoose.model('FeedEntry', feedEntrySchema);
+
+module.exports = FeedEntry;

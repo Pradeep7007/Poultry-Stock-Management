@@ -79,14 +79,13 @@ const createEggEntry = async (req, res) => {
       entry.enteredBy
     ];
 
-    const sheetResult = await appendToSheet(sheetData, 0);
+    // Save to Google Sheets non-blocking
+    const startTime = Date.now();
+    appendToSheet(sheetData, 0).then(sheetResult => {
+      console.log(`[External API] Google Sheets append took ${Date.now() - startTime} ms`);
+    }).catch(err => console.error(err));
 
-    let message = 'Record saved successfully.';
-    if (!sheetResult.success) {
-      message = 'Local data was saved but sheet synchronization failed.';
-    }
-
-    res.status(201).json({ message, data: entry, sheetSync: sheetResult.success });
+    res.status(201).json({ message: 'Record saved successfully.', data: entry, sheetSync: 'pending' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -176,8 +175,10 @@ const updateEggEntry = async (req, res) => {
         formatDate(updatedEntry.createdAt),
         updatedEntry.enteredBy
       ];
-      
-      await updateInSheet(oldSheetData, newSheetData, 0);
+      const startTime = Date.now();
+      updateInSheet(oldSheetData, newSheetData, 0).then(() => {
+        console.log(`[External API] Google Sheets update took ${Date.now() - startTime} ms`);
+      }).catch(err => console.error(err));
 
       res.json(updatedEntry);
     } else {
@@ -210,7 +211,11 @@ const deleteEggEntry = async (req, res) => {
       ];
       
       await entry.deleteOne();
-      await deleteFromSheet(oldSheetData, 0);
+      
+      const startTime = Date.now();
+      deleteFromSheet(oldSheetData, 0).then(() => {
+        console.log(`[External API] Google Sheets delete took ${Date.now() - startTime} ms`);
+      }).catch(err => console.error(err));
       
       res.json({ message: 'Entry removed' });
     } else {

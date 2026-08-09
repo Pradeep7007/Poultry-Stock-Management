@@ -8,7 +8,14 @@ const henDeathSchema = mongoose.Schema(
     batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
     enteredBy: { type: String, required: true }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model('HenDeath', henDeathSchema);
+henDeathSchema.index({ date: -1 });
+henDeathSchema.index({ batchId: 1 });
+
+const HenDeath = mongoose.model('HenDeath', henDeathSchema);
+
+module.exports = HenDeath;

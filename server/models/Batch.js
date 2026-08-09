@@ -14,4 +14,9 @@ const batchSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Batch', batchSchema);
+batchSchema.index({ name: 1 });
+batchSchema.index({ status: 1 });
+
+const Batch = mongoose.model('Batch', batchSchema);
+
+module.exports = Batch;
