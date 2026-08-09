@@ -379,35 +379,37 @@ const DEFAULT_CHART_CONFIG = [
           <p className="text-muted mb-0">Comprehensive overview of poultry operations.</p>
         </div>
         
-        <div className="d-flex align-items-center gap-2">
+        <div className="d-flex flex-wrap align-items-center gap-2">
           <button className="btn btn-light border d-inline-flex align-items-center gap-2 fw-medium" onClick={() => { setTempConfig([...chartConfig]); setShowConfigModal(true); }}>
             <Settings size={18} /> Customize Dashboard
           </button>
           <div className="d-flex flex-wrap gap-2 align-items-center bg-white p-2 rounded-3 border saas-card">
-          <Filter size={18} className="text-muted ms-2" />
-          <select 
-            className="form-select border-0 bg-transparent fw-medium" 
-            style={{ width: 'auto', minWidth: '130px', boxShadow: 'none' }}
-            value={dateFilter}
-            onChange={(e) => {
-              setDateFilter(e.target.value);
-              setShowCustom(e.target.value === 'custom');
-            }}
-          >
-            <option value="daily">Daily View</option>
-            <option value="weekly">Weekly View</option>
-            <option value="monthly">Monthly View</option>
-            <option value="yearly">Yearly View</option>
-            <option value="custom">Custom Range</option>
-          </select>
-
-          {showCustom && (
-            <div className="d-flex align-items-center gap-2 border-start ps-3">
-              <input type="date" className="form-control form-control-sm border-0" value={customStart} onChange={e => setCustomStart(e.target.value)} />
-              <span className="text-muted">to</span>
-              <input type="date" className="form-control form-control-sm border-0" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+            <div className="d-flex align-items-center">
+              <Filter size={18} className="text-muted ms-2" />
+              <select 
+                className="form-select border-0 bg-transparent fw-medium" 
+                style={{ width: 'auto', minWidth: '130px', boxShadow: 'none' }}
+                value={dateFilter}
+                onChange={(e) => {
+                  setDateFilter(e.target.value);
+                  setShowCustom(e.target.value === 'custom');
+                }}
+              >
+                <option value="daily">Daily View</option>
+                <option value="weekly">Weekly View</option>
+                <option value="monthly">Monthly View</option>
+                <option value="yearly">Yearly View</option>
+                <option value="custom">Custom Range</option>
+              </select>
             </div>
-          )}
+
+            {showCustom && (
+              <div className="d-flex flex-wrap align-items-center gap-2 border-start ps-3" style={{ borderLeft: '1px solid #dee2e6' }}>
+                <input type="date" className="form-control form-control-sm border-0" style={{ width: '130px' }} value={customStart} onChange={e => setCustomStart(e.target.value)} />
+                <span className="text-muted small">to</span>
+                <input type="date" className="form-control form-control-sm border-0" style={{ width: '130px' }} value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+              </div>
+            )}
           </div>
         </div>
       </div>

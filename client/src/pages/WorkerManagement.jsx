@@ -10,6 +10,7 @@ import {
   AlertCircle, Eye, SlidersHorizontal, ArrowUpDown, CheckCircle, CreditCard,
   Clock, Calendar
 } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 const WorkerManagement = () => {
   const queryClient = useQueryClient();
@@ -190,7 +191,7 @@ const WorkerManagement = () => {
       setIsBulkMode(false);
       addNotification({
         title: 'Bulk Attendance Saved',
-        message: `Bulk attendance entries saved for ${new Date(entriesDate).toLocaleDateString()}`,
+        message: `Bulk attendance entries saved for ${formatDate(entriesDate)}`,
         type: 'success'
       });
     },
@@ -687,7 +688,7 @@ const WorkerManagement = () => {
           {!isBulkMode ? (
             <div className="saas-card p-4">
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold m-0">Daily Logs for {new Date(entriesDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</h5>
+                <h5 className="fw-bold m-0">Daily Logs for {formatDate(entriesDate)}</h5>
               </div>
 
               {isEntriesLoading ? (
