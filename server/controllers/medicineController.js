@@ -6,6 +6,7 @@ const { formatText, formatDate } = require('../utils/formatter');
 // @desc    Create new medicine/vaccine entry
 // @route   POST /api/vaccines
 // @access  Public
+//
 const createMedicineEntry = async (req, res) => {
   try {
     const { name, date, type, medicineName, dosage, quantity, unitType, cost, notes, enteredBy } = req.body;
