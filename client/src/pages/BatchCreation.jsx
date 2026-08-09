@@ -4,10 +4,12 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS } from '../services/queries';
+import { useNotifications } from '../context/NotificationContext';
 import './BatchCreation.css';
 
 const BatchCreation = () => {
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
   const [formData, setFormData] = useState({
     name: '',
     startDate: '',
@@ -44,13 +46,16 @@ const BatchCreation = () => {
 
   const createMutation = useMutation({
     mutationFn: (payload) => api.post('/batches', payload),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success('Batch created successfully!');
+      addNotification('success', 'Batch Created', `Initialized new batch ${formData.name} with ${formData.startedHens} hens.`);
       queryClient.invalidateQueries({ queryKey: KEYS.BATCHES });
       navigate('/hens');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to create batch');
+      const errMsg = error.response?.data?.message || 'Failed to create batch';
+      toast.error(errMsg);
+      addNotification('error', 'Batch Creation Failed', errMsg);
     },
     onSettled: () => setIsSubmitting(false)
   });

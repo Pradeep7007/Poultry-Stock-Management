@@ -3,6 +3,7 @@ import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchVaccines, fetchBatches } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { useNotifications } from '../context/NotificationContext';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -19,6 +20,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 
 const VaccineManagement = () => {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -60,24 +62,38 @@ const VaccineManagement = () => {
 
   const createMutation = useMutation({
     mutationFn: (payload) => api.post('/vaccines', payload),
-    onSuccess: (res) => {
-      if (res.data.sheetSync === false) toast.success(res.data.message);
-      else toast.success('Record added successfully!');
+    onSuccess: (res, payload) => {
+      if (res.data.sheetSync === false) {
+        toast.success(res.data.message);
+        addNotification('warning', 'Treatment Sync Warning', res.data.message);
+      } else {
+        toast.success('Record added successfully!');
+        addNotification('success', 'Treatment Logged', `Successfully logged ${payload.type} treatment for ${payload.medicineName}`);
+      }
       queryClient.invalidateQueries({ queryKey: KEYS.VACCINES });
       handleResetForm();
     },
-    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onError: (error) => {
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Treatment Log failed', errMsg);
+    },
     onSettled: () => setIsSubmitting(false)
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => api.put(`/vaccines/${id}`, payload),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success('Record updated successfully!');
+      addNotification('success', 'Treatment Updated', `Successfully updated treatment log for ${res.data?.data?.medicineName || ''}`);
       queryClient.invalidateQueries({ queryKey: KEYS.VACCINES });
       handleResetForm();
     },
-    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onError: (error) => {
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Treatment Update Failed', errMsg);
+    },
     onSettled: () => setIsSubmitting(false)
   });
 
@@ -85,9 +101,13 @@ const VaccineManagement = () => {
     mutationFn: (id) => api.delete(`/vaccines/${id}`),
     onSuccess: () => {
       toast.success('Record deleted');
+      addNotification('warning', 'Treatment Deleted', 'A treatment record has been removed.');
       queryClient.invalidateQueries({ queryKey: KEYS.VACCINES });
     },
-    onError: () => toast.error('Failed to delete record')
+    onError: (error) => {
+      toast.error('Failed to delete record');
+      addNotification('error', 'Treatment Delete Failed', 'Could not delete the treatment record.');
+    }
   });
 
   const handleSubmit = async (e) => {
@@ -220,7 +240,33 @@ const VaccineManagement = () => {
 
   const renderChart = () => {
     const data = getChartData();
-    const options = { responsive: true, maintainAspectRatio: false };
+    const isDark = document.body.classList.contains('dark-mode');
+    const textColor = isDark ? '#9CA3AF' : '#4B5563';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0,0,0,0.05)';
+    
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: textColor }
+        }
+      }
+    };
+
+    if (chartType !== 'pie' && chartType !== 'doughnut') {
+      options.scales = {
+        x: {
+          grid: { display: false },
+          ticks: { color: textColor }
+        },
+        y: {
+          grid: { borderDash: [4, 4], color: gridColor },
+          ticks: { color: textColor }
+        }
+      };
+    }
+
     switch (chartType) {
       case 'line': case 'area': return <Line data={data} options={options} />;
       case 'column': return <Bar data={data} options={{...options, stacked: true}} />;

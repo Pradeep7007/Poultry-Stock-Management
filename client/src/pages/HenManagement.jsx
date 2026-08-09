@@ -3,6 +3,7 @@ import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { useNotifications } from '../context/NotificationContext';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -20,6 +21,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 
 const HenManagement = () => {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -63,26 +65,40 @@ const HenManagement = () => {
 
   const createMutation = useMutation({
     mutationFn: (payload) => api.post('/hens', payload),
-    onSuccess: (res) => {
-      if (res.data.sheetSync === false) toast.success(res.data.message);
-      else toast.success('Record added successfully!');
+    onSuccess: (res, payload) => {
+      if (res.data.sheetSync === false) {
+        toast.success(res.data.message);
+        addNotification('warning', 'Hen Sync Warning', res.data.message);
+      } else {
+        toast.success('Record added successfully!');
+        addNotification('error', 'Mortality Recorded', `${payload.deadToday} hen deaths recorded for batch ${payload.name}`);
+      }
       queryClient.invalidateQueries({ queryKey: KEYS.HENS });
       queryClient.invalidateQueries({ queryKey: KEYS.BATCHES });
       handleResetForm();
     },
-    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onError: (error) => {
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Mortality Record Failed', errMsg);
+    },
     onSettled: () => setIsSubmitting(false)
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => api.put(`/hens/${id}`, payload),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success('Record updated successfully!');
+      addNotification('success', 'Mortality Record Updated', `Successfully updated mortality for batch ${res.data?.data?.name || ''}`);
       queryClient.invalidateQueries({ queryKey: KEYS.HENS });
       queryClient.invalidateQueries({ queryKey: KEYS.BATCHES });
       handleResetForm();
     },
-    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onError: (error) => {
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Mortality Update Failed', errMsg);
+    },
     onSettled: () => setIsSubmitting(false)
   });
 
@@ -90,9 +106,13 @@ const HenManagement = () => {
     mutationFn: ({ id, type }) => type === 'death' ? api.delete(`/hens/${id}`) : api.delete(`/batches/${id}`),
     onSuccess: (_, { type }) => {
       toast.success('Record deleted');
+      addNotification('warning', 'Record Deleted', `Successfully removed ${type === 'death' ? 'mortality' : 'batch'} record.`);
       queryClient.invalidateQueries({ queryKey: type === 'death' ? KEYS.HENS : KEYS.BATCHES });
     },
-    onError: () => toast.error('Failed to delete record')
+    onError: (error) => {
+      toast.error('Failed to delete record');
+      addNotification('error', 'Delete Failed', 'Could not delete the record.');
+    }
   });
 
   const handleSubmit = async (e) => {
@@ -228,7 +248,33 @@ const HenManagement = () => {
 
   const renderChart = () => {
     const data = getChartData();
-    const options = { responsive: true, maintainAspectRatio: false };
+    const isDark = document.body.classList.contains('dark-mode');
+    const textColor = isDark ? '#9CA3AF' : '#4B5563';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0,0,0,0.05)';
+    
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: textColor }
+        }
+      }
+    };
+
+    if (chartType !== 'pie' && chartType !== 'doughnut') {
+      options.scales = {
+        x: {
+          grid: { display: false },
+          ticks: { color: textColor }
+        },
+        y: {
+          grid: { borderDash: [4, 4], color: gridColor },
+          ticks: { color: textColor }
+        }
+      };
+    }
+
     switch (chartType) {
       case 'line': case 'area': return <Line data={data} options={options} />;
       case 'column': return <Bar data={data} options={options} />;
@@ -419,7 +465,7 @@ const HenManagement = () => {
             )}
           </div>
         </div>
-      </div>
+      </div> 
       
       {selectedRecord && selectedRecord.isBatch && (
         <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }} tabIndex="-1" onClick={(e) => { if (e.target.classList.contains('modal')) setSelectedRecord(null); }}>

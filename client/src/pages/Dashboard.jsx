@@ -289,34 +289,54 @@ const DEFAULT_CHART_CONFIG = [
   const groupedData = groupDataByFilter();
   const labels = Object.keys(groupedData);
 
-  const getChartOptions = (yAxisTitle, formatCurrency = false) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        mode: 'index', intersect: false,
-        backgroundColor: 'rgba(17, 24, 39, 0.9)', titleColor: '#fff', padding: 12, cornerRadius: 8,
-        callbacks: {
-          label: (context) => {
-            let val = context.raw;
-            return formatCurrency ? `${context.dataset.label}: ₹${val.toLocaleString(undefined, {minimumFractionDigits: 2})}` : `${context.dataset.label}: ${val.toLocaleString()}`;
+  const getChartOptions = (yAxisTitle, formatCurrency = false) => {
+    const isDark = document.body.classList.contains('dark-mode');
+    const textColor = isDark ? '#9CA3AF' : '#4B5563';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0,0,0,0.05)';
+
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { 
+          position: 'top',
+          labels: { color: textColor }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: isDark ? '#1F2937' : 'rgba(17, 24, 39, 0.9)',
+          titleColor: isDark ? '#F9FAFB' : '#fff',
+          bodyColor: isDark ? '#F9FAFB' : '#fff',
+          borderColor: isDark ? '#2D3748' : 'transparent',
+          borderWidth: isDark ? 1 : 0,
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: (context) => {
+              let val = context.raw;
+              return formatCurrency ? `${context.dataset.label}: ₹${val.toLocaleString(undefined, {minimumFractionDigits: 2})}` : `${context.dataset.label}: ${val.toLocaleString()}`;
+            }
           }
         }
-      }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: { 
-        title: { display: true, text: yAxisTitle },
-        grid: { borderDash: [4, 4], color: 'rgba(0,0,0,0.05)' },
-        ticks: {
-          callback: (value) => formatCurrency ? `₹${value}` : value
+      },
+      scales: {
+        x: { 
+          grid: { display: false },
+          ticks: { color: textColor }
+        },
+        y: { 
+          title: { display: true, text: yAxisTitle, color: textColor },
+          grid: { borderDash: [4, 4], color: gridColor },
+          ticks: {
+            color: textColor,
+            callback: (value) => formatCurrency ? `₹${value}` : value
+          }
         }
-      }
-    },
-    interaction: { mode: 'nearest', axis: 'x', intersect: false }
-  });
+      },
+      interaction: { mode: 'nearest', axis: 'x', intersect: false }
+    };
+  };
 
   const renderChartComponent = (configItem, labels, groupedData) => {
     const dataKey = configItem.id;

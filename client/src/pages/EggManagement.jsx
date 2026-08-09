@@ -3,6 +3,7 @@ import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchEggs, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { useNotifications } from '../context/NotificationContext';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -14,6 +15,7 @@ import { formatDate } from '../utils/dateFormatter';
 
 const EggManagement = () => {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   
@@ -90,14 +92,18 @@ const EggManagement = () => {
     onSuccess: (res) => {
       if (res.data.sheetSync === false) {
         toast.success(res.data.message);
+        addNotification('warning', 'Egg Sync Warning', res.data.message);
       } else {
         toast.success('Entry added successfully!');
+        addNotification('success', 'Egg Entry Added', `Added egg record for batch ${res.data.data?.name || ''}`);
       }
       queryClient.invalidateQueries({ queryKey: KEYS.EGGS });
       handleResetForm();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Egg Entry Failed', errMsg);
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -106,13 +112,16 @@ const EggManagement = () => {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => api.put(`/eggs/${id}`, payload),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success('Entry updated successfully!');
+      addNotification('success', 'Egg Entry Updated', `Updated egg record for batch ${res.data?.data?.name || ''}`);
       queryClient.invalidateQueries({ queryKey: KEYS.EGGS });
       handleResetForm();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Egg Update Failed', errMsg);
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -123,10 +132,12 @@ const EggManagement = () => {
     mutationFn: (id) => api.delete(`/eggs/${id}`),
     onSuccess: () => {
       toast.success('Record deleted');
+      addNotification('warning', 'Egg Record Deleted', 'An egg production record has been removed.');
       queryClient.invalidateQueries({ queryKey: KEYS.EGGS });
     },
-    onError: () => {
+    onError: (error) => {
       toast.error('Failed to delete record');
+      addNotification('error', 'Egg Delete Failed', 'Could not delete the egg record.');
     }
   });
 

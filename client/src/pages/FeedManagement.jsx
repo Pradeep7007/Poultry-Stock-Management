@@ -3,6 +3,7 @@ import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchFeed, fetchEggs, fetchBatches } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { useNotifications } from '../context/NotificationContext';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -20,6 +21,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 
 const FeedManagement = () => {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -59,24 +61,38 @@ const FeedManagement = () => {
 
   const createMutation = useMutation({
     mutationFn: (payload) => api.post('/feed', payload),
-    onSuccess: (res) => {
-      if (res.data.sheetSync === false) toast.success(res.data.message);
-      else toast.success('Feed entry added!');
+    onSuccess: (res, payload) => {
+      if (res.data.sheetSync === false) {
+        toast.success(res.data.message);
+        addNotification('warning', 'Feed Sync Warning', res.data.message);
+      } else {
+        toast.success('Feed entry added!');
+        addNotification('success', 'Feed Record Created', `Successfully added feed entry: ${payload.feedWeight}kg of ${payload.feedType}`);
+      }
       queryClient.invalidateQueries({ queryKey: KEYS.FEED });
       handleResetForm();
     },
-    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onError: (error) => {
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Feed Creation Failed', errMsg);
+    },
     onSettled: () => setIsSubmitting(false)
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => api.put(`/feed/${id}`, payload),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success('Feed entry updated!');
+      addNotification('success', 'Feed Record Updated', `Successfully updated feed entry for batch ${res.data?.data?.name || ''}`);
       queryClient.invalidateQueries({ queryKey: KEYS.FEED });
       handleResetForm();
     },
-    onError: (error) => toast.error(error.response?.data?.message || 'Something went wrong'),
+    onError: (error) => {
+      const errMsg = error.response?.data?.message || 'Something went wrong';
+      toast.error(errMsg);
+      addNotification('error', 'Feed Update Failed', errMsg);
+    },
     onSettled: () => setIsSubmitting(false)
   });
 
@@ -84,9 +100,13 @@ const FeedManagement = () => {
     mutationFn: (id) => api.delete(`/feed/${id}`),
     onSuccess: () => {
       toast.success('Record deleted');
+      addNotification('warning', 'Feed Record Deleted', 'A feed record has been removed.');
       queryClient.invalidateQueries({ queryKey: KEYS.FEED });
     },
-    onError: () => toast.error('Failed to delete record')
+    onError: (error) => {
+      toast.error('Failed to delete record');
+      addNotification('error', 'Feed Delete Failed', 'Could not delete the feed record.');
+    }
   });
 
   const handleSubmit = async (e) => {
@@ -195,7 +215,33 @@ const FeedManagement = () => {
 
   const renderChart = () => {
     const data = getChartData();
-    const options = { responsive: true, maintainAspectRatio: false };
+    const isDark = document.body.classList.contains('dark-mode');
+    const textColor = isDark ? '#9CA3AF' : '#4B5563';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0,0,0,0.05)';
+    
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: textColor }
+        }
+      }
+    };
+
+    if (chartType !== 'pie' && chartType !== 'doughnut') {
+      options.scales = {
+        x: {
+          grid: { display: false },
+          ticks: { color: textColor }
+        },
+        y: {
+          grid: { borderDash: [4, 4], color: gridColor },
+          ticks: { color: textColor }
+        }
+      };
+    }
+
     if (chartType === 'pie' || chartType === 'doughnut') {
       const typeGroup = {};
       entries.forEach(e => {
@@ -450,7 +496,7 @@ const FeedManagement = () => {
       </div>
     )}{" "}
   </div>{" "}
-</div>;
+</div>
 
 
       <div className="col-12 col-xl-4 mt-3">

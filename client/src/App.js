@@ -12,6 +12,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './services/queries';
 import VaccineManagement from './pages/VaccineManagement';
 import Layout from './components/Layout';
+import { NotificationProvider } from './context/NotificationContext';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,24 +67,26 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster position="top-right" toastOptions={{
-        style: {
-          background: darkMode ? '#1E293B' : '#fff',
-          color: darkMode ? '#F8FAFC' : '#333',
-        }
-      }}/>
-      <div className="app-container">
-        <Routes>
-          <Route path="/login" element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/egg" element={<ProtectedRoute><EggManagement /></ProtectedRoute>} />
-          <Route path="/batch/new" element={<ProtectedRoute><BatchCreation /></ProtectedRoute>} />
-          <Route path="/hens" element={<ProtectedRoute><HenManagement /></ProtectedRoute>} />
-          <Route path="/feed" element={<ProtectedRoute><FeedManagement /></ProtectedRoute>} />
-          <Route path="/vaccines" element={<ProtectedRoute><VaccineManagement /></ProtectedRoute>} />
-        </Routes>
-      </div>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <NotificationProvider>
+        <Toaster position="top-right" toastOptions={{
+          style: {
+            background: darkMode ? '#1E293B' : '#fff',
+            color: darkMode ? '#F8FAFC' : '#333',
+          }
+        }}/>
+        <div className="app-container">
+          <Routes>
+            <Route path="/login" element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/egg" element={<ProtectedRoute><EggManagement /></ProtectedRoute>} />
+            <Route path="/batch/new" element={<ProtectedRoute><BatchCreation /></ProtectedRoute>} />
+            <Route path="/hens" element={<ProtectedRoute><HenManagement /></ProtectedRoute>} />
+            <Route path="/feed" element={<ProtectedRoute><FeedManagement /></ProtectedRoute>} />
+            <Route path="/vaccines" element={<ProtectedRoute><VaccineManagement /></ProtectedRoute>} />
+          </Routes>
+        </div>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </NotificationProvider>
     </QueryClientProvider>
   );
 }
