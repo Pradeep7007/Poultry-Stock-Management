@@ -7,6 +7,7 @@ const batchRoutes = require('./routes/batchRoutes');
 const feedRoutes = require('./routes/feedRoutes');
 const henRoutes = require('./routes/henRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
+const workerRoutes = require('./routes/workerRoutes');
 
 connectDB();
 const app = express();
@@ -28,6 +29,7 @@ app.use('/api/batches', batchRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/hens', henRoutes);
 app.use('/api/vaccines', medicineRoutes);
+app.use('/api/workers', workerRoutes);
 
 // Error Handling middleware
 app.use((err, req, res, next) => {

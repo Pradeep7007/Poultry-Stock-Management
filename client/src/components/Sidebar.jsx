@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Egg, Layers, LogOut, ShoppingBag, Users, Syringe } from 'lucide-react';
+import { LayoutDashboard, Egg, Layers, LogOut, ShoppingBag, Users, Syringe, UserCheck } from 'lucide-react';
 import { prefetchAllDashboardData } from '../services/queries';
 
 const Sidebar = ({ isOpen, onLogout }) => {
@@ -12,6 +12,7 @@ const Sidebar = ({ isOpen, onLogout }) => {
     { name: 'Hen Management', path: '/hens', icon: <Users size={20} /> },
     { name: 'Feed Management', path: '/feed', icon: <ShoppingBag size={20} /> },
     { name: 'Vaccines & Medicine', path: '/vaccines', icon: <Syringe size={20} /> },
+    { name: 'Worker Management', path: '/workers', icon: <UserCheck size={20} /> },
     { name: 'Create Batch', path: '/batch/new', icon: <Layers size={20} /> },
   ];
 
@@ -32,7 +33,7 @@ const Sidebar = ({ isOpen, onLogout }) => {
         <div className="bg-primary text-white rounded d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
           <span className="fs-4">🐓</span>
         </div>
-        <h4 className="m-0 text-white fw-bold fs-5">PMS Pro</h4>
+        <h4 className="m-0 text-white fw-bold fs-5">PMS Poultry</h4>
       </div>
 
       <div className="px-3 mt-4 flex-grow-1">

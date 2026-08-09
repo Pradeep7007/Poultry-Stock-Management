@@ -41,7 +41,7 @@ const Login = ({ onLogin }) => {
             <div className="bg-white text-primary rounded-3 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
               <span className="fs-3">🐓</span>
             </div>
-            <h3 className="text-white fw-bold m-0">PMS Pro</h3>
+            <h3 className="text-white fw-bold m-0">PMS Poultry</h3>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ const Login = ({ onLogin }) => {
             <div className="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
               <span className="fs-4">🐓</span>
             </div>
-            <h3 className="text-main fw-bold m-0">PMS Pro</h3>
+            <h3 className="text-main fw-bold m-0">PMS Poultry</h3>
           </div>
 
           <div className="mb-5">

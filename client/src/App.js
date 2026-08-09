@@ -11,6 +11,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './services/queries';
 import VaccineManagement from './pages/VaccineManagement';
+import WorkerManagement from './pages/WorkerManagement';
+import WorkerDetails from './pages/WorkerDetails';
 import Layout from './components/Layout';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -83,6 +85,8 @@ function App() {
             <Route path="/hens" element={<ProtectedRoute><HenManagement /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><FeedManagement /></ProtectedRoute>} />
             <Route path="/vaccines" element={<ProtectedRoute><VaccineManagement /></ProtectedRoute>} />
+            <Route path="/workers" element={<ProtectedRoute><WorkerManagement /></ProtectedRoute>} />
+            <Route path="/workers/:id" element={<ProtectedRoute><WorkerDetails /></ProtectedRoute>} />
           </Routes>
         </div>
         <ReactQueryDevtools initialIsOpen={false} />

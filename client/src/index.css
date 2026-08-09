@@ -35,7 +35,7 @@ body.dark-mode {
 }
 
 html {
-  font-size: 105%; /* Scales up all 'rem' units globally for a slightly larger font */
+  font-size: 100%; /* Scales up all 'rem' units globally for a slightly larger font */
 }
 
 html,

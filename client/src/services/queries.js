@@ -20,6 +20,7 @@ export const KEYS = {
   HENS: ['hens'],
   FEED: ['feed'],
   VACCINES: ['vaccines'],
+  WORKERS: ['workers'],
 };
 
 // Query functions
@@ -48,12 +49,23 @@ export const fetchVaccines = async () => {
   return data;
 };
 
+export const fetchWorkers = async () => {
+  const { data } = await api.get('/workers');
+  return data;
+};
+
+export const fetchWorkerById = async (id) => {
+  const { data } = await api.get(`/workers/${id}`);
+  return data;
+};
+
 export const prefetchAllDashboardData = async () => {
   await Promise.all([
     queryClient.prefetchQuery({ queryKey: KEYS.EGGS, queryFn: fetchEggs }),
     queryClient.prefetchQuery({ queryKey: KEYS.BATCHES, queryFn: fetchBatches }),
     queryClient.prefetchQuery({ queryKey: KEYS.HENS, queryFn: fetchHens }),
     queryClient.prefetchQuery({ queryKey: KEYS.FEED, queryFn: fetchFeed }),
-    queryClient.prefetchQuery({ queryKey: KEYS.VACCINES, queryFn: fetchVaccines })
+    queryClient.prefetchQuery({ queryKey: KEYS.VACCINES, queryFn: fetchVaccines }),
+    queryClient.prefetchQuery({ queryKey: KEYS.WORKERS, queryFn: fetchWorkers })
   ]);
 };
