@@ -309,7 +309,7 @@ const EggManagement = () => {
                 <input type="date" className="form-control-modern w-100" name="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-semibold text-muted">Price Per Egg (₹) <span className="text-danger">*</span></label>
+                <label className="form-label small fw-semibold text-muted">Price Per Egg (₹ ) <span className="text-danger">*</span></label>
                 <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="eggPrice" value={formData.eggPrice} onChange={e => setFormData({...formData, eggPrice: e.target.value})} required />
               </div>
               <div className="col-md-3">
@@ -330,7 +330,7 @@ const EggManagement = () => {
                 <input type="number" min="0" className="form-control-modern w-100" name="damagedEggs" value={formData.damagedEggs} onChange={e => setFormData({...formData, damagedEggs: e.target.value})} />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-semibold text-muted text-primary">Estimated Profit Per Egg (₹)</label>
+                <label className="form-label small fw-semibold text-muted text-primary">Estimated Profit Per Egg (₹ )</label>
                 <input type="number" min="0" step="0.01" className="form-control-modern w-100 border-primary" name="profitPerEgg" value={formData.profitPerEgg} onChange={e => setFormData({...formData, profitPerEgg: e.target.value})} placeholder="e.g. 1.25" />
               </div>
             </div>
@@ -347,7 +347,7 @@ const EggManagement = () => {
       <div className="row g-3 mb-4">
         {[
           { title: 'Total Produced', value: totalProduced.toLocaleString(), icon: <Egg size={20} />, color: 'primary' },
-          { title: 'Total Profit (₹)', value: `₹${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <TrendingUp size={20} />, color: 'warning' },
+          { title: 'Total Profit (₹ )', value: `₹ ${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <TrendingUp size={20} />, color: 'warning' },
           { title: 'Available Stock', value: availableStock.toLocaleString(), icon: <Package size={20} />, color: 'success' },
           { title: 'Total Sold', value: totalSold.toLocaleString(), icon: <ShoppingCart size={20} />, color: 'info' },
           { title: 'Total Damaged', value: totalDamaged.toLocaleString(), icon: <AlertTriangle size={20} />, color: 'danger' }
@@ -393,7 +393,7 @@ const EggManagement = () => {
                 <input type="date" className="form-control-modern w-100" name="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-semibold text-muted">Price Per Egg (₹) <span className="text-danger">*</span></label>
+                <label className="form-label small fw-semibold text-muted">Price Per Egg (₹ ) <span className="text-danger">*</span></label>
                 <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="eggPrice" value={formData.eggPrice} onChange={e => setFormData({...formData, eggPrice: e.target.value})} required />
               </div>
               <div className="col-md-3">
@@ -414,7 +414,7 @@ const EggManagement = () => {
                 <input type="number" min="0" className="form-control-modern w-100" name="damagedEggs" value={formData.damagedEggs} onChange={e => setFormData({...formData, damagedEggs: e.target.value})} />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-semibold text-muted text-primary">Estimated Profit Per Egg (₹)</label>
+                <label className="form-label small fw-semibold text-muted text-primary">Estimated Profit Per Egg (₹ )</label>
                 <input type="number" min="0" step="0.01" className="form-control-modern w-100 border-primary" name="profitPerEgg" value={formData.profitPerEgg} onChange={e => setFormData({...formData, profitPerEgg: e.target.value})} placeholder="e.g. 1.25" />
               </div>
             </div>
@@ -463,7 +463,7 @@ const EggManagement = () => {
                 <th className="text-end">Alive Hens</th>
                 <th className="text-end">Produced</th>
                 <th className="text-end">Production %</th>
-                <th className="text-end">Total Profit (₹)</th>
+                <th className="text-end">Total Profit (₹ )</th>
                 <th className="text-end">Actions</th>
               </tr>
             </thead>
@@ -478,7 +478,7 @@ const EggManagement = () => {
                     <td className="text-end fw-medium">{entry.aliveHens?.toLocaleString() || '-'}</td>
                     <td className="text-end fw-medium">{entry.eggsProduced?.toLocaleString()}</td>
                     <td className="text-end fw-bold text-success">{entry.productionPercentage ? entry.productionPercentage.toFixed(2) : '0.00'}%</td>
-                    <td className="text-end fw-bold text-warning">₹{(entry.profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td className="text-end fw-bold text-warning">₹ {(entry.profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td className="text-end">
                       <div className="d-flex justify-content-end gap-2">
                         <button className="btn btn-sm btn-light border p-1 rounded d-flex align-items-center text-secondary" onClick={() => handleEdit(entry)} title="Edit">
@@ -594,19 +594,19 @@ const EggManagement = () => {
                         <div className="row g-4">
                           <div className="col-12 col-sm-6">
                             <p className="text-muted small fw-semibold mb-1">Price Per Egg</p>
-                            <h6 className="fw-bold m-0">₹{selectedRecord.eggPrice}</h6>
+                            <h6 className="fw-bold m-0">₹ {selectedRecord.eggPrice}</h6>
                           </div>
                           <div className="col-12 col-sm-6">
                             <p className="text-muted small fw-semibold mb-1">Est. Profit / Egg</p>
-                            <h6 className="fw-bold m-0">₹{selectedRecord.profitPerEgg || 0}</h6>
+                            <h6 className="fw-bold m-0">₹ {selectedRecord.profitPerEgg || 0}</h6>
                           </div>
                           <div className="col-12 col-sm-6">
                             <p className="text-muted small fw-semibold mb-1">Total Sales</p>
-                            <h6 className="fw-bold text-primary m-0">₹{selectedRecord.salesAmount?.toLocaleString()}</h6>
+                            <h6 className="fw-bold text-primary m-0">₹ {selectedRecord.salesAmount?.toLocaleString()}</h6>
                           </div>
                           <div className="col-12 col-sm-6">
                             <p className="text-muted small fw-semibold mb-1">Total Profit</p>
-                            <h6 className="fw-bold text-warning m-0">₹{selectedRecord.profit?.toLocaleString()}</h6>
+                            <h6 className="fw-bold text-warning m-0">₹ {selectedRecord.profit?.toLocaleString()}</h6>
                           </div>
                         </div>
                       </div>

@@ -296,41 +296,6 @@ const HenManagement = () => {
         </button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="row g-3 mb-4">
-        {[
-          { title: 'Active Batch', value: activeBatch ? activeBatch.name : 'None', icon: <Activity size={20} />, color: 'primary' },
-          { title: 'Started Hens', value: startedHens.toLocaleString(), icon: <Users size={20} />, color: 'info' },
-          { title: 'Alive Hens', value: aliveHens.toLocaleString(), icon: <Users size={20} />, color: 'success' },
-          { title: 'Total Dead', value: totalDead.toLocaleString(), icon: <Skull size={20} />, color: 'danger' },
-          { title: 'Mortality %', value: `${mortalityPercentage}%`, icon: <AlertCircle size={20} />, color: 'warning' },
-          { title: 'Remaining Days', value: remainingDays, icon: <Clock size={20} />, color: 'secondary' }
-        ].map((stat, idx) => (
-          <div className="col-6 col-md-4 col-xl-2" key={idx}>
-            <div className="saas-card p-3 h-100 text-center">
-              <div className={`mx-auto mb-2 text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '40px', height: '40px' }}>
-                {stat.icon}
-              </div>
-              <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
-              <p className="text-muted small fw-semibold text-uppercase mt-1 mb-0">{stat.title}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Progress Bar */}
-      {activeBatch && (
-        <div className="saas-card p-4 mb-4">
-          <div className="d-flex justify-content-between mb-2">
-            <span className="fw-medium">Batch Progress</span>
-            <span className="fw-bold">{batchProgress}%</span>
-          </div>
-          <div className="progress" style={{ height: '10px' }}>
-            <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${batchProgress}%` }}></div>
-          </div>
-        </div>
-      )}
-
       {/* Form */}
       {showForm && (
         <div className="saas-card p-4 mb-4 border-start border-danger border-4 animate-fade-in">
@@ -372,26 +337,44 @@ const HenManagement = () => {
         </div>
       )}
 
-      {/* Chart & Tabs */}
-      <div className="row g-4 mb-4">
-        <div className="col-12 col-xl-4">
-          <div className="saas-card p-4 h-100">
-            <div className="d-flex justify-content-between mb-3">
-              <h5 className="fw-bold m-0">Analytics</h5>
-              <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
-                <option value="line">Line</option>
-                <option value="area">Area</option>
-                <option value="column">Bar</option>
-                <option value="doughnut">Doughnut</option>
-              </select>
-            </div>
-            <div style={{ height: '250px' }}>
-              {renderChart()}
-            </div>
+      {/* Progress Bar */}
+      {activeBatch && (
+        <div className="saas-card p-4 mb-4">
+          <div className="d-flex justify-content-between mb-2">
+            <span className="fw-medium">Batch Progress</span>
+            <span className="fw-bold">{batchProgress}%</span>
+          </div>
+          <div className="progress" style={{ height: '10px' }}>
+            <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${batchProgress}%` }}></div>
           </div>
         </div>
+      )}
 
-        <div className="col-12 col-xl-8">
+      {/* Summary Cards */}
+      <div className="row g-3 mb-4">
+        {[
+          { title: 'Active Batch', value: activeBatch ? activeBatch.name : 'None', icon: <Activity size={20} />, color: 'primary' },
+          { title: 'Started Hens', value: startedHens.toLocaleString(), icon: <Users size={20} />, color: 'info' },
+          { title: 'Alive Hens', value: aliveHens.toLocaleString(), icon: <Users size={20} />, color: 'success' },
+          { title: 'Total Dead', value: totalDead.toLocaleString(), icon: <Skull size={20} />, color: 'danger' },
+          { title: 'Mortality %', value: `${mortalityPercentage}%`, icon: <AlertCircle size={20} />, color: 'warning' },
+          { title: 'Remaining Days', value: remainingDays, icon: <Clock size={20} />, color: 'secondary' }
+        ].map((stat, idx) => (
+          <div className="col-6 col-md-4 col-xl-2" key={idx}>
+            <div className="saas-card p-3 h-100 text-center">
+              <div className={`mx-auto mb-2 text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '40px', height: '40px' }}>
+                {stat.icon}
+              </div>
+              <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
+              <p className="text-muted small fw-semibold text-uppercase mt-1 mb-0">{stat.title}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table & Chart */}
+      <div className="row g-4 mb-4">
+        <div className="col-12">
           <div className="saas-card h-100 d-flex flex-column">
             <div className="px-4 pt-3 border-bottom d-flex gap-3">
               <button className={`btn fw-medium pb-3 rounded-0 border-0 border-bottom border-2 ${activeTab === 0 ? 'border-primary text-primary' : 'border-transparent text-muted'}`} onClick={() => {setActiveTab(0); setCurrentPage(1);}}>Batches</button>
@@ -463,6 +446,23 @@ const HenManagement = () => {
                 <button className="btn btn-sm btn-light border" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={16} /></button>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="col-12">
+          <div className="saas-card p-4 col-12 col-xl-6">
+            <div className="d-flex justify-content-between mb-3">
+              <h5 className="fw-bold m-0">Analytics</h5>
+              <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
+                <option value="line">Line</option>
+                <option value="area">Area</option>
+                <option value="column">Bar</option>
+                <option value="doughnut">Doughnut</option>
+              </select>
+            </div>
+            <div style={{ height: '300px' }}>
+              {renderChart()}
+            </div>
           </div>
         </div>
       </div> 

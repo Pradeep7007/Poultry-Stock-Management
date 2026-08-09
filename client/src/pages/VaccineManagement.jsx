@@ -225,12 +225,12 @@ const VaccineManagement = () => {
       labels,
       datasets: [
         {
-          label: 'Medicine Cost (₹)',
+          label: 'Medicine Cost (₹ )',
           data: labels.map(l => grouped[l].medCost),
           borderColor: '#3B82F6', backgroundColor: chartType === 'area' ? 'rgba(59, 130, 246, 0.1)' : '#3B82F6', fill: chartType === 'area'
         },
         {
-          label: 'Vaccine Cost (₹)',
+          label: 'Vaccine Cost (₹ )',
           data: labels.map(l => grouped[l].vacCost),
           borderColor: '#10B981', backgroundColor: chartType === 'area' ? 'rgba(16, 185, 129, 0.1)' : '#10B981', fill: chartType === 'area'
         }
@@ -288,27 +288,6 @@ const VaccineManagement = () => {
         </button>
       </div>
 
-      <div className="row g-3 mb-4">
-        {[
-          { title: 'Total Medicines', value: medicines.length, icon: <Activity size={20} />, color: 'primary' },
-          { title: 'Total Vaccines', value: vaccines.length, icon: <Syringe size={20} />, color: 'info' },
-          { title: 'Medicine Cost', value: `₹${totalMedicineCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'warning' },
-          { title: 'Vaccine Cost', value: `₹${totalVaccineCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'success' },
-          { title: 'Total Treatment Cost', value: `₹${totalTreatmentCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'danger' },
-          { title: 'Cost Per Hen', value: `₹${costPerHen}`, icon: <Activity size={20} />, color: 'secondary' }
-        ].map((stat, idx) => (
-          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
-            <div className="saas-card p-3 h-100 d-flex align-items-center gap-3">
-              <div className={`text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle p-3`}>{stat.icon}</div>
-              <div>
-                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
-                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {showForm && (
         <div className="saas-card p-4 mb-4 border-start border-primary border-4 animate-fade-in">
           <div className="d-flex justify-content-between align-items-center mb-4">
@@ -347,7 +326,7 @@ const VaccineManagement = () => {
                 </div>
               </div>
               <div className="col-md-2">
-                <label className="form-label small fw-semibold text-muted">Total Cost (₹) <span className="text-danger">*</span></label>
+                <label className="form-label small fw-semibold text-muted">Total Cost (₹ ) <span className="text-danger">*</span></label>
                 <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="cost" value={formData.cost} onChange={e => setFormData({...formData, cost: e.target.value})} required />
               </div>
               <div className="col-md-3">
@@ -358,50 +337,45 @@ const VaccineManagement = () => {
                 <label className="form-label small fw-semibold text-muted">Notes (Optional)</label>
                 <input type="text" className="form-control-modern w-100" name="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
               </div>
-            </div>
-            <div className="d-flex justify-content-end gap-2">
+                 </div>
+                 <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-light fw-medium border" onClick={handleResetForm}>Cancel</button>
-              <button type="submit" className="btn-primary-modern px-4" disabled={isSubmitting}>
+              <button type="submit" className="btn-primary-modern px-4" style={{ backgroundColor: 'var(--secondary)', color: '#000' }} disabled={isSubmitting}>
                 {isSubmitting ? 'Saving...' : 'Save Record'}
               </button>
             </div>
           </form>
         </div>
       )}
+      
 
-      <div className="row g-4 mb-4">
-        <div className="col-12 col-xl-4 d-flex flex-column gap-4">
-          <div className="saas-card p-4 flex-grow-1">
-            <div className="d-flex justify-content-between mb-3">
-              <h5 className="fw-bold m-0">Cost Analytics</h5>
-              <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
-                <option value="line">Line</option>
-                <option value="area">Area</option>
-                <option value="column">Bar</option>
-                <option value="doughnut">Doughnut</option>
-              </select>
-            </div>
-            <div style={{ height: '220px' }}>{renderChart()}</div>
-          </div>
-
-          <div className="saas-card p-4 bg-primary bg-opacity-10 border-0 text-primary">
-            <h5 className="fw-bold mb-3 d-flex align-items-center gap-2"><Clock size={20}/> Latest Treatment</h5>
-            {latestTreatment ? (
+      <div className="row g-3 mb-4">
+        {[
+          { title: 'Total Medicines', value: medicines.length, icon: <Activity size={20} />, color: 'primary' },
+          { title: 'Total Vaccines', value: vaccines.length, icon: <Syringe size={20} />, color: 'info' },
+          { title: 'Medicine Cost', value: `₹ ${totalMedicineCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'warning' },
+          { title: 'Vaccine Cost', value: `₹ ${totalVaccineCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'success' },
+          { title: 'Total Treatment Cost', value: `₹ ${totalTreatmentCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'danger' },
+          { title: 'Cost Per Hen', value: `₹ ${costPerHen}`, icon: <Activity size={20} />, color: 'secondary' }
+        ].map((stat, idx) => (
+          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
+            <div className="saas-card p-3 h-100 d-flex align-items-center gap-3">
+              <div className={`text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle p-3`}>{stat.icon}</div>
               <div>
-                <h6 className="fw-bold mb-1">{latestTreatment.medicineName}</h6>
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <span className={`badge bg-${latestTreatment.type === 'Vaccine' ? 'success' : 'primary'}`}>{latestTreatment.type}</span>
-                  <span className="small fw-semibold">{formatDate(latestTreatment.date)}</span>
-                </div>
-                <p className="mb-0 small fw-medium">Dosage: {latestTreatment.dosage}</p>
+                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
+                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
               </div>
-            ) : (
-              <p className="mb-0 small">No treatments recorded yet.</p>
-            )}
+            </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="col-12 col-xl-8">
+      
+
+      {/* Table & Analytics */}
+      <div className="row g-4 mb-4">
+        {/* Table */}
+        <div className="col-12">
           <div className="saas-card h-100 d-flex flex-column">
             <div className="p-3 border-bottom d-flex justify-content-between gap-2">
               <div className="position-relative w-100" style={{ maxWidth: '300px' }}>
@@ -428,7 +402,7 @@ const VaccineManagement = () => {
                       <td>{item.dosage}</td>
                       <td>{item.quantity}</td>
                       <td>{item.unitType || '-'}</td>
-                      <td className="fw-bold text-danger">₹{item.cost}</td>
+                      <td className="fw-bold text-danger">₹ {item.cost}</td>
                       <td className="text-end">
                         <div className="d-flex justify-content-end gap-2">
                           <button className="btn btn-sm btn-light text-primary me-2" onClick={() => handleEdit(item)}><Edit2 size={16}/></button>
@@ -447,9 +421,47 @@ const VaccineManagement = () => {
                 {Array.from({ length: totalPages }).map((_, i) => (
                   <button key={i} className={`btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-light border'}`} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
                 ))}
-                <button className="btn btn-sm btn-light border" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={16} /></button>
+                <button className="btn btn-sm btn-light border" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p - 1)}><ChevronRight size={16} /></button>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Analytics & Latest Treatment */}
+        <div className="col-12">
+          <div className="row g-4">
+            <div className="col-12 col-lg-8">
+              <div className="saas-card p-4 h-100">
+                <div className="d-flex justify-content-between mb-3">
+                  <h5 className="fw-bold m-0">Cost Analytics</h5>
+                  <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
+                    <option value="line">Line</option>
+                    <option value="area">Area</option>
+                    <option value="column">Bar</option>
+                    <option value="doughnut">Doughnut</option>
+                  </select>
+                </div>
+                <div style={{ height: '300px' }}>{renderChart()}</div>
+              </div>
+            </div>
+
+            <div className="col-12 col-lg-4">
+              <div className="saas-card p-4 bg-primary bg-opacity-10 border-0 text-primary h-100 d-flex flex-column justify-content-center">
+                <h5 className="fw-bold mb-3 d-flex align-items-center gap-2"><Clock size={20}/> Latest Treatment</h5>
+                {latestTreatment ? (
+                  <div>
+                    <h6 className="fw-bold mb-1">{latestTreatment.medicineName}</h6>
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <span className={`badge bg-${latestTreatment.type === 'Vaccine' ? 'success' : 'primary'}`}>{latestTreatment.type}</span>
+                      <span className="small fw-semibold">{formatDate(latestTreatment.date)}</span>
+                    </div>
+                    <p className="mb-0 small fw-medium text-muted">Dosage: {latestTreatment.dosage}</p>
+                  </div>
+                ) : (
+                  <p className="mb-0 small">No treatments recorded yet.</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -506,7 +518,7 @@ const VaccineManagement = () => {
                       </div>
                       <div className="col-12 col-md-6">
                         <p className="text-muted small fw-semibold mb-1">Total Cost</p>
-                        <h6 className="fw-bold text-danger m-0">₹{selectedRecord.cost}</h6>
+                        <h6 className="fw-bold text-danger m-0">₹ {selectedRecord.cost}</h6>
                       </div>
                       <div className="col-12">
                         <p className="text-muted small fw-semibold mb-1">Notes</p>

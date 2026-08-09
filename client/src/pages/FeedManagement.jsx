@@ -204,7 +204,7 @@ const FeedManagement = () => {
           borderColor: '#10B981', backgroundColor: chartType === 'area' ? 'rgba(16, 185, 129, 0.1)' : '#10B981', fill: chartType === 'area'
         },
         {
-          label: 'Cost (₹)',
+          label: 'Cost (₹ )',
           data: labels.map(l => grouped[l].cost),
           borderColor: '#F59E0B', backgroundColor: chartType === 'area' ? 'rgba(245, 158, 11, 0.1)' : '#F59E0B', fill: chartType === 'area',
           hidden: true
@@ -274,26 +274,6 @@ const FeedManagement = () => {
         </button>
       </div>
 
-      <div className="row g-3 mb-4">
-        {[
-          { title: 'Total Feed (KG)', value: totalWeight.toLocaleString(), icon: <ShoppingBag size={20} />, color: 'primary' },
-          { title: 'This Month (KG)', value: weightThisMonth.toLocaleString(), icon: <Calendar size={20} />, color: 'info' },
-          { title: 'Total Cost (₹)', value: `₹${totalCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'danger' },
-          { title: 'Avg Cost / KG', value: `₹${avgCostPerKg}`, icon: <TrendingUp size={20} />, color: 'warning' },
-          { title: 'Feed Cost / Egg', value: `₹${feedCostPerEgg}`, icon: <TrendingUp size={20} />, color: 'success' }
-        ].map((stat, idx) => (
-          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
-            <div className="saas-card p-3 h-100 d-flex align-items-center gap-3">
-              <div className={`text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle p-3`}>{stat.icon}</div>
-              <div>
-                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
-                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {showForm && (
         <div className="saas-card p-4 mb-4 border-start border-warning border-4 animate-fade-in">
           <h5 className="fw-bold mb-4">{isEditing ? 'Edit Feed Record' : 'Add Feed Record'}</h5>
@@ -320,7 +300,7 @@ const FeedManagement = () => {
                 <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="feedWeight" value={formData.feedWeight} onChange={e => setFormData({ ...formData, feedWeight: e.target.value })} required />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-semibold text-muted">Total Cost (₹) <span className="text-danger">*</span></label>
+                <label className="form-label small fw-semibold text-muted">Total Cost (₹ ) <span className="text-danger">*</span></label>
                 <input type="number" min="0.01" step="0.01" className="form-control-modern w-100" name="feedCost" value={formData.feedCost} onChange={e => setFormData({ ...formData, feedCost: e.target.value })} required />
               </div>
               <div className="col-md-4">
@@ -345,173 +325,172 @@ const FeedManagement = () => {
           </form>
         </div>
       )}
+      
 
-     <div className="col-12">
-  {" "}
-  <div className="saas-card h-100 d-flex flex-column w-100">
-    {" "}
-    <div className="p-3 border-bottom d-flex justify-content-between gap-2 flex-wrap">
-      {" "}
-      <div className="position-relative w-100" style={{ maxWidth: "300px" }}>
-        {" "}
-        <Search
-          size={16}
-          className="position-absolute top-50 translate-middle-y text-muted"
-          style={{ left: "12px" }}
-        />{" "}
-        <input
-          type="text"
-          className="form-control-modern w-100 form-control-sm"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={function (e) {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-          style={{ paddingLeft: "34px" }}
-        />{" "}
-      </div>{" "}
-      <div className="d-flex gap-2">
-        {" "}
-        <button className="btn btn-light btn-sm border" onClick={exportToExcel}>
-          {" "}
-          <Download size={14} />{" "}
-        </button>{" "}
-        <button className="btn btn-light btn-sm border" onClick={exportToPDF}>
-          {" "}
-          <Printer size={14} />{" "}
-        </button>{" "}
-      </div>{" "}
-    </div>{" "}
-    <div className="table-responsive flex-grow-1 w-100">
-      {" "}
-      <table className="modern-table w-100" style={{ minWidth: "900px" }}>
-        {" "}
-        <thead>
-          {" "}
-          <tr>
-            {" "}
-            <th>Name</th> <th>Date</th> <th>Type</th> <th>Supplier</th>{" "}
-            <th>Weight</th> <th>Cost</th> <th>Entered By</th>{" "}
-            <th className="text-end">Actions</th>{" "}
-          </tr>{" "}
-        </thead>{" "}
-        <tbody>
-          {" "}
-          {loading ? (
-            <tr>
-              {" "}
-              <td colSpan="8" className="text-center py-4">
-                {" "}
-                <div className="spinner-border text-primary"></div>{" "}
-              </td>{" "}
-            </tr>
-          ) : tableData.length > 0 ? (
-            tableData.map((item) => (
-              <tr key={item._id}>
-                {" "}
-                <td className="fw-medium"> {item.name} </td>{" "}
-                <td
-                  className="text-primary text-decoration-underline"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setSelectedRecord(item)}
-                >
-                  {" "}
-                  {formatDate(item.date)}{" "}
-                </td>{" "}
-                <td> {item.feedType || "-"} </td>{" "}
-                <td> {item.supplier || "-"} </td>{" "}
-                <td>
-                  {" "}
-                  <span className="badge-modern badge-success">
-                    {" "}
-                    {item.feedWeight} KG{" "}
-                  </span>{" "}
-                </td>{" "}
-                <td className="fw-bold text-danger"> ₹{item.feedCost} </td>{" "}
-                <td> {item.enteredBy} </td>{" "}
-                <td className="text-end">
-                  {" "}
-                  <button
-                    className="btn btn-sm btn-light text-primary me-2"
-                    onClick={() => handleEdit(item)}
-                  >
-                    {" "}
-                    <Edit2 size={16} />{" "}
-                  </button>{" "}
-                  <button
-                    className="btn btn-sm btn-light text-danger"
-                    onClick={() => handleDelete(item._id)}
-                  >
-                    {" "}
-                    <Trash2 size={16} />{" "}
-                  </button>{" "}
-                </td>{" "}
-              </tr>
-            ))
-          ) : (
-            <tr>
-              {" "}
-              <td colSpan="8" className="text-center py-4 text-muted">
-                {" "}
-                <AlertCircle size={32} className="opacity-50 mb-2" />{" "}
-                <p className="mb-0"> No records found. </p>{" "}
-              </td>{" "}
-            </tr>
-          )}{" "}
-        </tbody>{" "}
-      </table>{" "}
-    </div>{" "}
-    {totalPages > 1 && (
-      <div className="p-3 border-top d-flex justify-content-end gap-1 flex-wrap">
-        {" "}
-        <button
-          className="btn btn-sm btn-light border"
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((p) => p - 1)}
-        >
-          {" "}
-          <ChevronLeft size={16} />{" "}
-        </button>{" "}
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <button
-            key={i}
-            className={`btn btn-sm ${
-              currentPage === i + 1 ? "btn-primary" : "btn-light border"
-            }`}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {" "}
-            {i + 1}{" "}
-          </button>
-        ))}{" "}
-        <button
-          className="btn btn-sm btn-light border"
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((p) => p + 1)}
-        >
-          {" "}
-          <ChevronRight size={16} />{" "}
-        </button>{" "}
-      </div>
-    )}{" "}
-  </div>{" "}
-</div>
-
-
-      <div className="col-12 col-xl-4 mt-3">
-        <div className="saas-card p-4 h-100">
-          <div className="d-flex justify-content-between mb-3">
-            <h5 className="fw-bold m-0">Analytics</h5>
-            <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
-              <option value="line">Line</option>
-              <option value="area">Area</option>
-              <option value="column">Bar</option>
-              <option value="pie">Pie (by Type)</option>
-            </select>
+      <div className="row g-3 mb-4">
+        {[
+          { title: 'Total Feed (KG)', value: totalWeight.toLocaleString(), icon: <ShoppingBag size={20} />, color: 'primary' },
+          { title: 'This Month (KG)', value: weightThisMonth.toLocaleString(), icon: <Calendar size={20} />, color: 'info' },
+          { title: 'Total Cost (₹ )', value: `₹ ${totalCost.toLocaleString()}`, icon: <DollarSign size={20} />, color: 'danger' },
+          { title: 'Avg Cost / KG', value: `₹ ${avgCostPerKg}`, icon: <TrendingUp size={20} />, color: 'warning' },
+          { title: 'Feed Cost / Egg', value: `₹ ${feedCostPerEgg}`, icon: <TrendingUp size={20} />, color: 'success' }
+        ].map((stat, idx) => (
+          <div className="col-12 col-sm-6 col-md-4 col-xl" key={idx}>
+            <div className="saas-card p-3 h-100 d-flex align-items-center gap-3">
+              <div className={`text-${stat.color} bg-${stat.color} bg-opacity-10 rounded-circle p-3`}>{stat.icon}</div>
+              <div>
+                <p className="text-muted small fw-semibold text-uppercase mb-1">{stat.title}</p>
+                <h3 className="fw-bold m-0 text-dark">{stat.value}</h3>
+              </div>
+            </div>
           </div>
-          <div style={{ height: '300px' }}>{renderChart()}</div>
+        ))}
+      </div>
+
+
+      {/* Table & Analytics */}
+      <div className="row g-4 mb-4">
+        {/* Table */}
+        <div className="col-12">
+          <div className="saas-card h-100 d-flex flex-column w-100">
+            <div className="p-3 border-bottom d-flex justify-content-between gap-2 flex-wrap">
+              <div className="position-relative w-100" style={{ maxWidth: "300px" }}>
+                <Search
+                  size={16}
+                  className="position-absolute top-50 translate-middle-y text-muted"
+                  style={{ left: "12px" }}
+                />
+                <input
+                  type="text"
+                  className="form-control-modern w-100 form-control-sm"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={function (e) {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  style={{ paddingLeft: "34px" }}
+                />
+              </div>
+              <div className="d-flex gap-2">
+                <button className="btn btn-light btn-sm border" onClick={exportToExcel}>
+                  <Download size={14} />
+                </button>
+                <button className="btn btn-light btn-sm border" onClick={exportToPDF}>
+                  <Printer size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="table-responsive flex-grow-1 w-100">
+              <table className="modern-table w-100" style={{ minWidth: "900px" }}>
+                <thead>
+                  <tr>
+                    <th>Name</th> <th>Date</th> <th>Type</th> <th>Supplier</th>
+                    <th>Weight</th> <th>Cost</th> <th>Entered By</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="8" className="text-center py-4">
+                        <div className="spinner-border text-primary"></div>
+                      </td>
+                    </tr>
+                  ) : tableData.length > 0 ? (
+                    tableData.map((item) => (
+                      <tr key={item._id}>
+                        <td className="fw-medium"> {item.name} </td>
+                        <td
+                          className="text-primary text-decoration-underline"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => setSelectedRecord(item)}
+                        >
+                          {formatDate(item.date)}
+                        </td>
+                        <td> {item.feedType || "-"} </td>
+                        <td> {item.supplier || "-"} </td>
+                        <td>
+                          <span className="badge-modern badge-success">
+                            {item.feedWeight} KG
+                          </span>
+                        </td>
+                        <td className="fw-bold text-danger"> ₹ {item.feedCost} </td>
+                        <td> {item.enteredBy} </td>
+                        <td className="text-end">
+                          <button
+                            className="btn btn-sm btn-light text-primary me-2"
+                            onClick={() => handleEdit(item)}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-light text-danger"
+                            onClick={() => handleDelete(item._id)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="text-center py-4 text-muted">
+                        <AlertCircle size={32} className="opacity-50 mb-2" />
+                        <p className="mb-0"> No records found. </p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="p-3 border-top d-flex justify-content-end gap-1 flex-wrap">
+                <button
+                  className="btn btn-sm btn-light border"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    className={`btn btn-sm ${
+                      currentPage === i + 1 ? "btn-primary" : "btn-light border"
+                    }`}
+                    onClick={() => setCurrentPage(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  className="btn btn-sm btn-light border"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Analytics */}
+        <div className="col-12">
+          <div className="saas-card p-4 col-12 col-xl-6">
+            <div className="d-flex justify-content-between mb-3">
+              <h5 className="fw-bold m-0">Analytics</h5>
+              <select className="form-select form-select-sm w-auto" value={chartType} onChange={e => setChartType(e.target.value)}>
+                <option value="line">Line</option>
+                <option value="area">Area</option>
+                <option value="column">Bar</option>
+                <option value="pie">Pie (by Type)</option>
+              </select>
+            </div>
+            <div style={{ height: '300px' }}>{renderChart()}</div>
+          </div>
+      </div>
       </div>
 
       {selectedRecord && (
@@ -561,7 +540,7 @@ const FeedManagement = () => {
                       </div>
                       <div className="col-12 col-md-6">
                         <p className="text-muted small fw-semibold mb-1">Total Cost</p>
-                        <h6 className="fw-bold text-danger m-0">₹{selectedRecord.feedCost}</h6>
+                        <h6 className="fw-bold text-danger m-0">₹ {selectedRecord.feedCost}</h6>
                       </div>
                     </div>
                   </div>

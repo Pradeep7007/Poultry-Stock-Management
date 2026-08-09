@@ -315,7 +315,7 @@ const DEFAULT_CHART_CONFIG = [
           callbacks: {
             label: (context) => {
               let val = context.raw;
-              return formatCurrency ? `${context.dataset.label}: ₹${val.toLocaleString(undefined, {minimumFractionDigits: 2})}` : `${context.dataset.label}: ${val.toLocaleString()}`;
+              return formatCurrency ? `${context.dataset.label}: ₹ ${val.toLocaleString(undefined, {minimumFractionDigits: 2})}` : `${context.dataset.label}: ${val.toLocaleString()}`;
             }
           }
         }
@@ -330,7 +330,7 @@ const DEFAULT_CHART_CONFIG = [
           grid: { borderDash: [4, 4], color: gridColor },
           ticks: {
             color: textColor,
-            callback: (value) => formatCurrency ? `₹${value}` : value
+            callback: (value) => formatCurrency ? `₹ ${value}` : value
           }
         }
       },
@@ -415,8 +415,8 @@ const DEFAULT_CHART_CONFIG = [
       {/* Production KPIs */}
       <div className="row g-4 mb-4">
         {[
-          { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <DollarSign size={24} />, color: 'primary' },
-          { title: 'Total Profit', value: `₹${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <TrendingUp size={24} />, color: 'success' },
+          { title: 'Total Revenue', value: `₹ ${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <DollarSign size={24} />, color: 'primary' },
+          { title: 'Total Profit', value: `₹ ${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: <TrendingUp size={24} />, color: 'success' },
           { title: 'Eggs Produced', value: totalProduced.toLocaleString(), icon: <Egg size={24} />, color: 'info' },
           { title: 'Production %', value: `${avgProductionPercentage.toFixed(2)}%`, icon: <Activity size={24} />, color: 'danger' },
           { title: 'Current Stock', value: currentStock.toLocaleString(), icon: <Package size={24} />, color: 'warning' }
@@ -440,10 +440,10 @@ const DEFAULT_CHART_CONFIG = [
       {/* Operational KPIs */}
       <div className="row g-4 mb-5">
         {[
-          { title: 'Total Operational Cost', value: `₹${totalOperationalCost.toLocaleString()}`, icon: <TrendingUp size={24} />, color: 'danger' },
-          { title: 'Total Medicine Cost', value: `₹${totalMedicineCost.toLocaleString()}`, icon: <Activity size={24} />, color: 'primary' },
-          { title: 'Total Vaccine Cost', value: `₹${totalVaccineCost.toLocaleString()}`, icon: <Syringe size={24} />, color: 'success' },
-          { title: 'Treatment / Hen', value: `₹${vaccineCostPerHen}`, icon: <Users size={24} />, color: 'info' },
+          { title: 'Total Operational Cost', value: `₹ ${totalOperationalCost.toLocaleString()}`, icon: <TrendingUp size={24} />, color: 'danger' },
+          { title: 'Total Medicine Cost', value: `₹ ${totalMedicineCost.toLocaleString()}`, icon: <Activity size={24} />, color: 'primary' },
+          { title: 'Total Vaccine Cost', value: `₹ ${totalVaccineCost.toLocaleString()}`, icon: <Syringe size={24} />, color: 'success' },
+          { title: 'Treatment / Hen', value: `₹ ${vaccineCostPerHen}`, icon: <Users size={24} />, color: 'info' },
         ].map((stat, idx) => (
           <div className="col-12 col-sm-6 col-xl flex-grow-1" key={`op-${idx}`}>
             <div className="saas-card p-4 h-100 d-flex flex-column justify-content-between border-0" style={{ borderTop: `4px solid var(--${stat.color})` }}>
@@ -501,7 +501,7 @@ const DEFAULT_CHART_CONFIG = [
                           <span className={`badge bg-${v.type === 'Vaccine' ? 'success' : 'primary'} bg-opacity-10 text-${v.type === 'Vaccine' ? 'success' : 'primary'} border border-${v.type === 'Vaccine' ? 'success' : 'primary'} rounded-pill px-2 py-0 small`}>{v.type}</span>
                           <span className="text-muted small fw-semibold">{formatDate(v.date)}</span>
                         </div>
-                        <p className="text-muted small mb-0 fw-medium">Dosage: {v.dosage} | Cost: ₹{v.cost}</p>
+                        <p className="text-muted small mb-0 fw-medium">Dosage: {v.dosage} | Cost: ₹ {v.cost}</p>
                       </div>
                     );
                   })}
