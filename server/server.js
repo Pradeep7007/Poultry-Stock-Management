@@ -10,6 +10,7 @@ const feedRoutes = require('./routes/feedRoutes');
 const henRoutes = require('./routes/henRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
 const workerRoutes = require('./routes/workerRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
 
+app.use('/api/auth', authRoutes);
 app.use('/api/eggs', eggRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/feed', feedRoutes);

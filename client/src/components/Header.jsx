@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, Sun, Moon, Bell, User, Check, CheckCheck, Trash2, AlertTriangle, AlertCircle, Info, CheckCircle } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 
 const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const { notifications, markAsRead, markAllAsRead, deleteNotification, clearAll } = useNotifications();
+  const { user } = useAuth();
   const dropdownRef = useRef(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -194,12 +196,12 @@ const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
         </div>
 
         <div className="d-flex align-items-center gap-2 border-start ps-3 ms-1" style={{ borderColor: 'var(--border-color)' }}>
-          <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
-            <User size={18} />
+          <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '36px', height: '36px' }}>
+            {user?.username ? user.username.charAt(0).toUpperCase() : <User size={18} />}
           </div>
           <div className="d-none d-lg-block">
-            <p className="m-0 fw-semibold text-sm lh-1">Farm Admin</p>
-            <span className="text-muted" style={{ fontSize: '11px' }}>pms@poultry.com</span>
+            <p className="m-0 fw-semibold text-sm lh-1">{user?.fullName || user?.username || 'Farm Admin'}</p>
+            <span className="text-muted" style={{ fontSize: '11px' }}>{user?.email || (user?.username ? `${user.username}@poultry.com` : 'pms@poultry.com')}</span>
           </div>
         </div>
       </div>

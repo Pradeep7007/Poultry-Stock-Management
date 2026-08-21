@@ -15,19 +15,14 @@ import WorkerManagement from './pages/WorkerManagement';
 import WorkerDetails from './pages/WorkerDetails';
 import Layout from './components/Layout';
 import { NotificationProvider } from './context/NotificationContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+function AppContent() {
+  const { isAuthenticated, logout } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
-  
   const navigate = useNavigate();
 
   useEffect(() => {
-    const auth = localStorage.getItem('pms_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-    }
-    
     const isDark = localStorage.getItem('pms_theme') === 'dark';
     setDarkMode(isDark);
     if (isDark) {
@@ -46,15 +41,12 @@ function App() {
     }
   };
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem('pms_auth', 'true');
+  const handleLoginSuccess = () => {
     navigate('/');
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('pms_auth');
+    logout();
     navigate('/login');
   };
 
@@ -68,29 +60,42 @@ function App() {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <Toaster position="top-right" toastOptions={{
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
           style: {
             background: darkMode ? '#1E293B' : '#fff',
             color: darkMode ? '#F8FAFC' : '#333',
           }
-        }}/>
-        <div className="app-container">
-          <Routes>
-            <Route path="/login" element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/egg" element={<ProtectedRoute><EggManagement /></ProtectedRoute>} />
-            <Route path="/batch/new" element={<ProtectedRoute><BatchCreation /></ProtectedRoute>} />
-            <Route path="/hens" element={<ProtectedRoute><HenManagement /></ProtectedRoute>} />
-            <Route path="/feed" element={<ProtectedRoute><FeedManagement /></ProtectedRoute>} />
-            <Route path="/vaccines" element={<ProtectedRoute><VaccineManagement /></ProtectedRoute>} />
-            <Route path="/workers" element={<ProtectedRoute><WorkerManagement /></ProtectedRoute>} />
-            <Route path="/workers/:id" element={<ProtectedRoute><WorkerDetails /></ProtectedRoute>} />
-          </Routes>
-        </div>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </NotificationProvider>
+        }}
+      />
+      <div className="app-container">
+        <Routes>
+          <Route path="/login" element={!isAuthenticated ? <Login onLogin={handleLoginSuccess} /> : <Navigate to="/" />} />
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/egg" element={<ProtectedRoute><EggManagement /></ProtectedRoute>} />
+          <Route path="/batch/new" element={<ProtectedRoute><BatchCreation /></ProtectedRoute>} />
+          <Route path="/hens" element={<ProtectedRoute><HenManagement /></ProtectedRoute>} />
+          <Route path="/feed" element={<ProtectedRoute><FeedManagement /></ProtectedRoute>} />
+          <Route path="/vaccines" element={<ProtectedRoute><VaccineManagement /></ProtectedRoute>} />
+          <Route path="/workers" element={<ProtectedRoute><WorkerManagement /></ProtectedRoute>} />
+          <Route path="/workers/:id" element={<ProtectedRoute><WorkerDetails /></ProtectedRoute>} />
+        </Routes>
+      </div>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <NotificationProvider>
+          <AppContent />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </NotificationProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

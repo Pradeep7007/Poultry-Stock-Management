@@ -6,27 +6,47 @@ const { formatText, formatDate } = require('../utils/formatter');
 // @route   POST /api/feed
 const createFeedEntry = async (req, res) => {
   try {
-    let { name, date, feedWeight, feedCost, feedType, supplier, enteredBy } = req.body;
+    let {
+      name,
+      date,
+      currentFeedWeightInSilo,
+      purchasedFeedWeightInSilo,
+      feedWeight,
+      feedCost,
+      feedType,
+      supplier,
+      enteredBy
+    } = req.body;
 
-    if (!name || !date || feedWeight === undefined || feedCost === undefined || !enteredBy) {
-      return res.status(400).json({ message: 'Please provide all required fields.' });
+    const parsedPurchasedWeight = purchasedFeedWeightInSilo !== undefined && purchasedFeedWeightInSilo !== ''
+      ? Number(purchasedFeedWeightInSilo)
+      : (feedWeight !== undefined ? Number(feedWeight) : 0);
+
+    const parsedCurrentWeight = currentFeedWeightInSilo !== undefined && currentFeedWeightInSilo !== ''
+      ? Number(currentFeedWeightInSilo)
+      : 0;
+
+    const parsedCost = Number(feedCost || 0);
+
+    if (!name || !date || (!parsedPurchasedWeight && !parsedCurrentWeight) || parsedCost <= 0 || !enteredBy) {
+      return res.status(400).json({ message: 'Please provide all required feed details including Batch, Date, Feed Weight, Cost, and Entered By.' });
     }
 
-    if (Number(feedWeight) <= 0 || Number(feedCost) <= 0) {
-      return res.status(400).json({ message: 'Weight and Cost must be greater than zero.' });
-    }
+    const totalWeight = parsedPurchasedWeight > 0 ? parsedPurchasedWeight : parsedCurrentWeight;
 
     const entry = await FeedEntry.create({
       name: formatText(name),
       date,
-      feedWeight: Number(feedWeight),
-      feedCost: Number(feedCost),
+      currentFeedWeightInSilo: parsedCurrentWeight,
+      purchasedFeedWeightInSilo: parsedPurchasedWeight,
+      feedWeight: totalWeight,
+      feedCost: parsedCost,
       feedType: feedType ? formatText(feedType) : '',
       supplier: supplier ? formatText(supplier) : '',
       enteredBy: formatText(enteredBy)
     });
 
-    // Save to Google Sheets (Columns: Name, Date, Feed Weight, Feed Cost, Feed Type, Supplier, Created Time, Entered By)
+    // Save to Google Sheets
     const sheetData = [
       entry.name,
       formatDate(entry.date),
@@ -80,7 +100,19 @@ const updateFeedEntry = async (req, res) => {
 
       entry.name = req.body.name ? formatText(req.body.name) : entry.name;
       entry.date = req.body.date || entry.date;
-      entry.feedWeight = req.body.feedWeight !== undefined ? Number(req.body.feedWeight) : entry.feedWeight;
+      
+      if (req.body.currentFeedWeightInSilo !== undefined) {
+        entry.currentFeedWeightInSilo = Number(req.body.currentFeedWeightInSilo);
+      }
+      if (req.body.purchasedFeedWeightInSilo !== undefined) {
+        entry.purchasedFeedWeightInSilo = Number(req.body.purchasedFeedWeightInSilo);
+      }
+
+      const totalWeight = req.body.purchasedFeedWeightInSilo !== undefined
+        ? Number(req.body.purchasedFeedWeightInSilo)
+        : (req.body.feedWeight !== undefined ? Number(req.body.feedWeight) : entry.feedWeight);
+
+      entry.feedWeight = totalWeight;
       entry.feedCost = req.body.feedCost !== undefined ? Number(req.body.feedCost) : entry.feedCost;
       entry.feedType = req.body.feedType !== undefined ? formatText(req.body.feedType) : entry.feedType;
       entry.supplier = req.body.supplier !== undefined ? formatText(req.body.supplier) : entry.supplier;
