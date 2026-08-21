@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const { notifications, markAsRead, markAllAsRead, deleteNotification, clearAll } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead, deleteNotification, clearAll, permission, requestPermission } = useNotifications();
   const { user } = useAuth();
   const dropdownRef = useRef(null);
 
@@ -104,7 +104,8 @@ const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
               className="notification-dropdown position-absolute mt-2 rounded-3 shadow-lg border animate-slide-up"
               style={{
                 right: 0,
-                width: '360px',
+                width: 'min(360px, calc(100vw - 24px))',
+                maxWidth: 'calc(100vw - 24px)',
                 backgroundColor: 'var(--surface-color)',
                 borderColor: 'var(--border-color)',
                 zIndex: 1050
@@ -131,7 +132,20 @@ const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
                 )}
               </div>
 
-              <div className="notification-list" style={{ maxHeight: '320px', overflowY: 'auto' }}>
+              {permission !== 'granted' && (
+                <div className="bg-warning bg-opacity-10 p-2 px-3 border-bottom d-flex justify-content-between align-items-center" style={{ borderColor: 'var(--border-color)' }}>
+                  <span className="small text-dark fw-medium" style={{ fontSize: '11px' }}>🔔 Get native alerts even when tab is closed</span>
+                  <button
+                    onClick={requestPermission}
+                    className="btn btn-warning btn-sm py-0 px-2 fw-semibold"
+                    style={{ fontSize: '11px' }}
+                  >
+                    Enable
+                  </button>
+                </div>
+              )}
+
+              <div className="notification-list" style={{ maxHeight: '360px', overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
                   <div className="p-4 text-center">
                     <div className="fs-3 mb-2">🔔</div>
@@ -150,10 +164,10 @@ const Header = ({ toggleSidebar, toggleTheme, darkMode }) => {
                       <div className="mt-1 flex-shrink-0">{getIcon(n.type)}</div>
                       <div className="flex-grow-1 min-w-0">
                         <div className="d-flex justify-content-between align-items-start gap-2">
-                          <p className={`m-0 text-truncate text-sm ${!n.read ? 'fw-bold' : 'fw-medium'}`} style={{ color: 'var(--text-main)' }}>{n.title}</p>
+                          <p className={`m-0 text-wrap text-break text-sm ${!n.read ? 'fw-bold' : 'fw-medium'}`} style={{ color: 'var(--text-main)', lineHeight: '1.3' }}>{n.title}</p>
                           <span className="text-muted flex-shrink-0" style={{ fontSize: '10px' }}>{formatRelativeTime(n.timestamp)}</span>
                         </div>
-                        <p className="m-0 text-muted text-xs mt-1 text-wrap" style={{ fontSize: '12px', lineHeight: '1.4' }}>{n.message}</p>
+                        <p className="m-0 text-muted text-xs mt-1 text-wrap text-break" style={{ fontSize: '12px', lineHeight: '1.4' }}>{n.message}</p>
                       </div>
                       <div className="d-flex flex-column gap-2 flex-shrink-0 align-items-end">
                         {!n.read && (
