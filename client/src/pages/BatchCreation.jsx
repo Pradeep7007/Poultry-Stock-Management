@@ -18,12 +18,12 @@ const BatchCreation = () => {
     startDate: '',
     endDate: '',
     startedHens: '',
-    enteredBy: currentUserName
+    enteredBy: currentUserName || 'Pradeep'
   });
 
   useEffect(() => {
     if (!formData.enteredBy) {
-      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
     }
   }, [currentUserName]);
   

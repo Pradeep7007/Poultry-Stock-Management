@@ -34,14 +34,14 @@ const HenManagement = () => {
 
   const getInitialFormData = () => ({
     id: '', name: '', date: new Date().toISOString().split('T')[0],
-    deadToday: '', enteredBy: currentUserName
+    deadToday: '', enteredBy: currentUserName || 'Pradeep'
   });
 
   const [formData, setFormData] = useState(getInitialFormData);
 
   useEffect(() => {
-    if (!isEditing && !formData.id) {
-      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    if (!isEditing && !formData.id && (!formData.enteredBy || formData.enteredBy === '')) {
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
     }
   }, [currentUserName, isEditing]);
 

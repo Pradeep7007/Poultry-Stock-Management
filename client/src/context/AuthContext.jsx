@@ -20,12 +20,23 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem('pms_auth') === 'true';
   });
 
-  const currentUserName = typeof user === 'string'
-    ? user
-    : (user?.username || (user?.email ? user.email.split('@')[0] : '') || user?.fullName || '');
+  const currentUserName = (
+    typeof user === 'string' ? user : (
+      user?.fullName ||
+      user?.username ||
+      user?.name ||
+      (user?.email ? user.email.split('@')[0] : '') ||
+      localStorage.getItem('pms_entered_by') ||
+      'Pradeep'
+    )
+  );
 
   useEffect(() => {
     if (user) {
+      const nameToStore = typeof user === 'string' ? user : (user.fullName || user.username || user.name || '');
+      if (nameToStore) {
+        localStorage.setItem('pms_entered_by', nameToStore);
+      }
       localStorage.setItem('pms_user', typeof user === 'string' ? JSON.stringify({ username: user, fullName: user }) : JSON.stringify(user));
       localStorage.setItem('pms_auth', 'true');
     }

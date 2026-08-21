@@ -27,14 +27,14 @@ const EggManagement = () => {
 
   const getInitialFormData = () => ({
     id: '', name: '', date: new Date().toISOString().split('T')[0],
-    eggsProduced: '', eggsSold: '', damagedEggs: '', eggPrice: '', profitPerEgg: '', enteredBy: currentUserName
+    eggsProduced: '', eggsSold: '', damagedEggs: '', eggPrice: '', profitPerEgg: '', enteredBy: currentUserName || 'Pradeep'
   });
 
   const [formData, setFormData] = useState(getInitialFormData);
 
   useEffect(() => {
-    if (!isEditing && !formData.id) {
-      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    if (!isEditing && !formData.id && (!formData.enteredBy || formData.enteredBy === '')) {
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
     }
   }, [currentUserName, isEditing]);
 

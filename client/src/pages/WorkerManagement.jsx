@@ -76,9 +76,9 @@ const WorkerManagement = () => {
   });
 
   useEffect(() => {
-    setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
-    setEntryForm(prev => ({ ...prev, createdBy: currentUserName }));
-    setPaymentForm(prev => ({ ...prev, createdBy: currentUserName }));
+    setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
+    setEntryForm(prev => ({ ...prev, createdBy: currentUserName || 'Pradeep' }));
+    setPaymentForm(prev => ({ ...prev, createdBy: currentUserName || 'Pradeep' }));
   }, [currentUserName]);
 
   // Fetch Workers with stats

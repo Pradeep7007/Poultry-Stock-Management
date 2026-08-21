@@ -32,14 +32,14 @@ const VaccineManagement = () => {
 
   const getInitialFormData = () => ({
     id: '', date: new Date().toISOString().split('T')[0], type: 'Medicine',
-    medicineName: '', dosage: '', quantity: '', unitType: 'Packet', cost: '', notes: '', enteredBy: currentUserName
+    medicineName: '', dosage: '', quantity: '', unitType: 'Packet', cost: '', notes: '', enteredBy: currentUserName || 'Pradeep'
   });
 
   const [formData, setFormData] = useState(getInitialFormData);
 
   useEffect(() => {
-    if (!isEditing && !formData.id) {
-      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    if (!isEditing && !formData.id && (!formData.enteredBy || formData.enteredBy === '')) {
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
     }
   }, [currentUserName, isEditing]);
 

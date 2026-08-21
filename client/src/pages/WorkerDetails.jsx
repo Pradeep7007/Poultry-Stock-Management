@@ -56,8 +56,8 @@ const WorkerDetails = () => {
   });
 
   useEffect(() => {
-    setProfileForm(prev => ({ ...prev, enteredBy: currentUserName }));
-    setEntryForm(prev => ({ ...prev, createdBy: currentUserName }));
+    setProfileForm(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
+    setEntryForm(prev => ({ ...prev, createdBy: currentUserName || 'Pradeep' }));
   }, [currentUserName]);
 
   const [paymentForm, setPaymentForm] = useState({
