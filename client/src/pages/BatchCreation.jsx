@@ -11,8 +11,7 @@ import './BatchCreation.css';
 const BatchCreation = () => {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
-  const { user } = useAuth();
-  const currentUserName = user?.username || user?.fullName || 'Admin';
+  const { user, currentUserName } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',

@@ -6,15 +6,27 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('pms_user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        return parsed;
+      } catch (e) {
+        return { username: savedUser, fullName: savedUser };
+      }
+    }
+    return null;
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('pms_auth') === 'true';
   });
 
+  const currentUserName = typeof user === 'string'
+    ? user
+    : (user?.username || user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'Admin'));
+
   useEffect(() => {
     if (user) {
-      localStorage.setItem('pms_user', JSON.stringify(user));
+      localStorage.setItem('pms_user', typeof user === 'string' ? JSON.stringify({ username: user, fullName: user }) : JSON.stringify(user));
       localStorage.setItem('pms_auth', 'true');
     }
   }, [user]);
@@ -85,7 +97,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, currentUserName, isAuthenticated, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

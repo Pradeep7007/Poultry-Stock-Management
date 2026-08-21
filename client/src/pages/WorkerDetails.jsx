@@ -18,8 +18,7 @@ const WorkerDetails = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
-  const { user } = useAuth();
-  const currentUserName = user?.username || user?.fullName || 'Admin';
+  const { user, currentUserName } = useAuth();
 
   // Selected Month/Year Filter (for monthly summary and log views)
   const today = new Date();

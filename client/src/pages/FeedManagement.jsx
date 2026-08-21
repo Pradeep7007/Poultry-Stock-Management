@@ -23,9 +23,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const FeedManagement = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
-  const { user } = useAuth();
-  
-  const currentUserName = user?.username || user?.fullName || 'Admin';
+  const { user, currentUserName } = useAuth();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
