@@ -180,19 +180,32 @@ const DEFAULT_CHART_CONFIG = [
   const filteredEntries = getFilteredData();
 
   // Metrics
-  const totalProduced = filteredEntries.reduce((acc, curr) => acc + curr.eggsProduced, 0);
-  // const totalSold = filteredEntries.reduce((acc, curr) => acc + curr.eggsSold, 0);
-  // const totalDamaged = filteredEntries.reduce((acc, curr) => acc + (curr.damagedEggs || 0), 0);
-  const totalRevenue = filteredEntries.reduce((acc, curr) => acc + curr.salesAmount, 0);
-  const totalProfit = filteredEntries.reduce((acc, curr) => acc + (curr.profit || 0), 0);
+  const totalProduced = filteredEntries.reduce((acc, curr) => acc + Number(curr.eggsProduced || 0), 0);
+  const totalRevenue = filteredEntries.reduce((acc, curr) => {
+    const rev = curr.salesAmount !== undefined && curr.salesAmount !== null
+      ? Number(curr.salesAmount)
+      : (curr.eggsSold && curr.eggPrice ? Number(curr.eggsSold) * Number(curr.eggPrice) : 0);
+    return acc + (isNaN(rev) ? 0 : rev);
+  }, 0);
+
+  const totalProfit = filteredEntries.reduce((acc, curr) => {
+    let p = 0;
+    if (curr.profit !== undefined && curr.profit !== null && !isNaN(curr.profit)) {
+      p = Number(curr.profit);
+    } else if (curr.profitPerEgg && curr.eggsSold) {
+      p = Number(curr.profitPerEgg) * Number(curr.eggsSold);
+    }
+    return acc + (isNaN(p) ? 0 : p);
+  }, 0);
   
-  const overallProduced = entries.reduce((acc, curr) => acc + curr.eggsProduced, 0);
-  const overallSold = entries.reduce((acc, curr) => acc + curr.eggsSold, 0);
-  const overallDamaged = entries.reduce((acc, curr) => acc + (curr.damagedEggs || 0), 0);
-  const currentStock = overallProduced - overallSold - overallDamaged;
+  const overallProduced = entries.reduce((acc, curr) => acc + Number(curr.eggsProduced || 0), 0);
+  const overallSold = entries.reduce((acc, curr) => acc + Number(curr.eggsSold || 0), 0);
+  const overallDamaged = entries.reduce((acc, curr) => acc + Number(curr.damagedEggs || 0), 0);
+  const currentStock = Math.max(0, overallProduced - overallSold - overallDamaged);
   
-  const avgProductionPercentage = filteredEntries.length > 0 
-    ? (filteredEntries.reduce((acc, curr) => acc + (curr.productionPercentage || 0), 0) / filteredEntries.length) 
+  const validProdEntries = filteredEntries.filter(e => e.productionPercentage !== undefined && e.productionPercentage !== null);
+  const avgProductionPercentage = validProdEntries.length > 0 
+    ? (validProdEntries.reduce((acc, curr) => acc + Number(curr.productionPercentage || 0), 0) / validProdEntries.length) 
     : 0;
 
   // --- Operational Costs ---

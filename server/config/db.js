@@ -7,6 +7,10 @@ if (!cached) {
 }
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -16,16 +20,15 @@ const connectDB = async () => {
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-    
     const startTime = Date.now();
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    }).then((mongooseInstance) => {
       const duration = Date.now() - startTime;
-      console.log(`[DB] connection: ${duration} ms`);
-      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
-      return mongoose;
+      console.log(`[DB] connection: ${duration} ms | Host: ${mongooseInstance.connection.host}`);
+      return mongooseInstance;
     });
   }
   
