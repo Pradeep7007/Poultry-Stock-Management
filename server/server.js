@@ -11,7 +11,6 @@ const henRoutes = require('./routes/henRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
 const workerRoutes = require('./routes/workerRoutes');
 
-connectDB();
 const app = express();
 
 const corsOptions = {
@@ -22,7 +21,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -34,6 +32,25 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+// Database connection middleware for Serverless resilience
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('[Database Connection Error]:', err.message);
+    return res.status(500).json({
+      error: 'Database Connection Failed',
+      message: err.message,
+      hint: 'Please check MONGODB_URI in Vercel Environment Variables and verify MongoDB Atlas IP whitelist (0.0.0.0/0).'
+    });
+  }
+});
+
+app.get('/', (req, res) => {
+  res.send('Backend is running!');
+});
 
 app.use('/api/eggs', eggRoutes);
 app.use('/api/batches', batchRoutes);
@@ -55,9 +72,5 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`Backend server running on http://127.0.0.1:${PORT}`);
   });
 }
-
-app.get("/", (req, res) => {
-  res.send("Backend is running!");
-});
 
 module.exports = app;
