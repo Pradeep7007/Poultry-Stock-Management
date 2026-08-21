@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
 
   const currentUserName = typeof user === 'string'
     ? user
-    : (user?.username || user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'Admin'));
+    : (user?.username || (user?.email ? user.email.split('@')[0] : '') || user?.fullName || '');
 
   useEffect(() => {
     if (user) {
