@@ -60,10 +60,6 @@ const WorkerDetails = () => {
     setProfileForm(prev => ({ ...prev, enteredBy: currentUserName }));
     setEntryForm(prev => ({ ...prev, createdBy: currentUserName }));
   }, [currentUserName]);
-    dailyWage: '',
-    workDetails: '',
-    createdBy: 'Admin'
-  });
 
   const [paymentForm, setPaymentForm] = useState({
     paymentDate: new Date().toISOString().split('T')[0],
