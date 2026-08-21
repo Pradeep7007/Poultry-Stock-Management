@@ -767,6 +767,7 @@ body.dark-mode .notification-item.unread-bg {
 .notification-list::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
   border-radius: 3px;
+}
 .notification-dropdown {
   position: absolute;
   top: 100%;
