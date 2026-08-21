@@ -22,7 +22,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const VaccineManagement = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
-  const { user, currentUserName } = useAuth();
+  const { currentUserName } = useAuth();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -41,6 +41,7 @@ const VaccineManagement = () => {
     if (!isEditing && !formData.id && (!formData.enteredBy || formData.enteredBy === '')) {
       setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserName, isEditing]);
 
   const [searchTerm, setSearchTerm] = useState('');

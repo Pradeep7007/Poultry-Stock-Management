@@ -17,7 +17,7 @@ const WorkerManagement = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
-  const { user, currentUserName } = useAuth();
+  const { currentUserName } = useAuth();
 
   // Navigation tab state: 'workers', 'today', 'payments'
   const [activeTab, setActiveTab] = useState('workers');

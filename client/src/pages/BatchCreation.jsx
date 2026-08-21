@@ -11,7 +11,7 @@ import './BatchCreation.css';
 const BatchCreation = () => {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
-  const { user, currentUserName } = useAuth();
+  const { currentUserName } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -25,6 +25,7 @@ const BatchCreation = () => {
     if (!formData.enteredBy) {
       setFormData(prev => ({ ...prev, enteredBy: currentUserName || 'Pradeep' }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserName]);
   
   const [errors, setErrors] = useState({});

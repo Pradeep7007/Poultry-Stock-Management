@@ -23,7 +23,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const FeedManagement = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
-  const { user, currentUserName } = useAuth();
+  const { currentUserName } = useAuth();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -54,6 +54,7 @@ const FeedManagement = () => {
         enteredBy: currentUserName || ''
       }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserName, isEditing, showForm]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -192,10 +193,6 @@ const FeedManagement = () => {
 
   const totalEggs = eggEntries.reduce((acc, curr) => acc + (curr.eggsProduced || 0), 0);
   const feedCostPerEgg = totalEggs > 0 ? (totalCost / totalEggs).toFixed(2) : '0.00';
-
-  const thisMonthStr = new Date().toISOString().substring(0, 7);
-  const monthEntries = entries.filter(e => e.date && e.date.startsWith(thisMonthStr));
-  const weightThisMonth = monthEntries.reduce((acc, curr) => acc + (curr.purchasedFeedWeightInSilo || curr.feedWeight || 0), 0);
 
   // --- Tables ---
   const searchedData = entries.filter(e =>

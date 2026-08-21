@@ -197,7 +197,7 @@ const Login = ({ onLogin }) => {
                       className="btn btn-link p-0 text-primary small text-decoration-none fw-semibold"
                       onClick={() => { setForgotUsername(username); setMode('forgot'); }}
                     >
-                      Forgot password?
+                      Forgot Password?
                     </button>
                   </div>
                   <div className="position-relative">
