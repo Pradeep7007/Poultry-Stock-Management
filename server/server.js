@@ -36,6 +36,9 @@ app.use(express.json());
 
 // Database connection middleware for Serverless resilience
 app.use(async (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   try {
     await connectDB();
     next();
@@ -50,16 +53,30 @@ app.use(async (req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Backend is running!');
+  res.json({ status: 'online', message: 'Poultry Management System API' });
 });
 
+// API Routes (supporting both /api/* and direct /* paths for serverless rewrites)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/eggs', eggRoutes);
+app.use('/eggs', eggRoutes);
+
 app.use('/api/batches', batchRoutes);
+app.use('/batches', batchRoutes);
+
 app.use('/api/feed', feedRoutes);
+app.use('/feed', feedRoutes);
+
 app.use('/api/hens', henRoutes);
+app.use('/hens', henRoutes);
+
 app.use('/api/vaccines', medicineRoutes);
+app.use('/vaccines', medicineRoutes);
+
 app.use('/api/workers', workerRoutes);
+app.use('/workers', workerRoutes);
 
 // Error Handling middleware
 app.use((err, req, res, next) => {
@@ -69,7 +86,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== 'production') {
+if (require.main === module || process.env.NODE_ENV !== 'production') {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Backend server running on http://127.0.0.1:${PORT}`);
   });
