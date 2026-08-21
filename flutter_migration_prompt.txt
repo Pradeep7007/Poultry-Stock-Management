@@ -1,0 +1,160 @@
+# Complete Flutter Mobile App Development Prompt for Poultry Stock Management
+
+You are an expert Flutter developer. Your task is to develop a comprehensive Flutter mobile application for our existing "Poultry Stock Management" MERN web application. This prompt provides the complete structure, MongoDB schemas, exact API endpoints, detailed UI layouts, data presentations, and specific features required.
+
+## 1. Project Context & Environment
+- **Project Name:** Poultry-app
+- **Framework:** Flutter (using Riverpod for state management, Dio for API calls, go_router for navigation, and freezed for data classes).
+- **Backend API Base URL:** `http://localhost:5000` (or the deployed backend URL).
+- **MongoDB URI:** `mongodb+srv://pmspradeep007_db_user:JZHgddVfyqke3lol@pmspoulty.mdylzge.mongodb.net/?appName=pmspoulty`
+
+---
+
+## 2. MongoDB Schemas (Data Structures)
+Use these schemas to generate your Dart models (`freezed` or standard classes).
+
+### 2.1 Batch Model (`Batch`)
+- `name`: String, required
+- `startDate`: Date, required
+- `endDate`: Date, required
+- `startedHens`: Number, required, min 1
+- `aliveHens`: Number, required, min 0
+- `status`: String, enum ['Active', 'Completed'], default 'Active'
+- `phase`: String, default 'Phase 1'
+- `enteredBy`: String, required
+
+### 2.2 Egg Entry Model (`EggEntry`)
+- `name`: String (Batch Name), required
+- `date`: Date, required
+- `aliveHens`: Number, required, min 1
+- `eggsProduced`: Number, required, min 0
+- `productionPercentage`: Number, default 0
+- `eggsSold`: Number, required, min 0
+- `damagedEggs`: Number, default 0
+- `eggPrice`: Number, required, min 0.01
+- `salesAmount`: Number, required
+- `profitPerEgg`: Number, default 0
+- `profit`: Number, default 0
+- `enteredBy`: String, required
+
+### 2.3 Feed Entry Model (`FeedEntry`)
+- `name`: String (Batch Name), required
+- `date`: Date, required
+- `feedWeight`: Number, required, min 0.01
+- `feedCost`: Number, required, min 0.01
+- `feedType`: String
+- `supplier`: String
+- `enteredBy`: String, required
+
+### 2.4 Hen Death Model (`HenDeath`)
+- `name`: String (Batch Name), required
+- `date`: Date, required
+- `deadToday`: Number, required, min 0
+- `batchId`: ObjectId (Reference to Batch)
+- `enteredBy`: String, required
+
+### 2.5 Medicine/Vaccine Entry Model (`MedicineEntry`)
+- `name`: String, required
+- `batchId`: ObjectId (Reference to Batch), required
+- `date`: Date, required
+- `type`: String, enum ['Medicine', 'Vaccine'], required
+- `medicineName`: String, required
+- `dosage`: String, required
+- `quantity`: Number, required, min 1
+- `unitType`: String, enum ['Packet', 'Bottle'], default 'Packet'
+- `cost`: Number, required, min 0.01
+- `notes`: String
+- `enteredBy`: String, required
+
+### 2.6 Worker Models
+- **Worker:** `name` (String), `status` ('Active'/'Inactive'), `defaultDailyWage` (Number), `phoneNumber` (String), `jobRole` (String), `address` (String), `notes` (String).
+- **DailyWorkEntry:** `workerId` (ObjectId), `date` (Date), `attendance` ('Present'/'Absent'/'Half Day'/'Leave'), `dailyWage` (Number), `workDetails` (String).
+- **SalaryPayment:** `workerId` (ObjectId), `paymentDate` (Date), `amount` (Number), `paymentMethod` ('Cash'/'Bank Transfer'/'UPI'/'Other'), `notes` (String).
+
+---
+
+## 3. Exact API Endpoints & Usage
+
+### Batches API (`/api/batches`)
+- `GET /api/batches`: Retrieve all batches.
+- `POST /api/batches`: Create a new batch.
+- `PUT /api/batches/:id`: Update an existing batch.
+- `DELETE /api/batches/:id`: Delete a batch.
+
+### Eggs API (`/api/eggs`)
+- `GET /api/eggs`: Retrieve all egg production entries.
+- `POST /api/eggs`: Log new egg production/sales.
+- `PUT /api/eggs/:id`: Update an egg entry.
+- `DELETE /api/eggs/:id`: Delete an egg entry.
+
+### Feed API (`/api/feed`)
+- `GET /api/feed`: Retrieve feed consumption records.
+- `POST /api/feed`: Log daily feed consumption.
+- `PUT /api/feed/:id` & `DELETE /api/feed/:id`: Update/Delete.
+
+### Hens API (`/api/hens`)
+- `GET /api/hens`: Retrieve hen mortality records.
+- `POST /api/hens`: Log daily hen deaths.
+- `PUT /api/hens/:id` & `DELETE /api/hens/:id`: Update/Delete.
+
+### Vaccines & Medicines API (`/api/vaccines`)
+- `GET /api/vaccines`: Retrieve treatment records.
+- `POST /api/vaccines`: Log a new treatment.
+- `PUT /api/vaccines/:id` & `DELETE /api/vaccines/:id`: Update/Delete.
+
+### Workers API (`/api/workers`)
+- `GET /api/workers`: Retrieve all workers.
+- `POST /api/workers`: Register a new worker.
+- `GET /api/workers/:id`: Get specific worker details.
+- `PUT /api/workers/:id`: Update worker profile.
+- `DELETE /api/workers/:id`: Delete a worker.
+- `GET /api/workers/payment-summary`: Get total payout statistics.
+- `GET /api/workers/daily-entries`: Get entries for a specific date.
+- `POST /api/workers/bulk-attendance`: Save bulk attendance.
+- `POST /api/workers/assignments`: Assign work.
+- `POST /api/workers/attendance`: Save attendance for a single worker.
+- `POST /api/workers/:id/entries`: Add daily work/attendance entry.
+- `PUT /api/workers/:id/entries/:entryId` & `DELETE /api/workers/:id/entries/:entryId`: Edit/Delete daily entry.
+- `POST /api/workers/:id/payments`: Log salary payout.
+- `PUT /api/workers/:id/payments/:paymentId` & `DELETE /api/workers/:id/payments/:paymentId`: Edit/Delete payout.
+
+---
+
+## 4. How to Save and Retrieve Data (Architecture)
+- **Networking:** Use `Dio` for all API calls. Wrap calls in a Repository class.
+- **State Management:** Use `Riverpod` (`AsyncNotifier` or `FutureProvider`). Fetch arrays from `GET` endpoints, cache them, and update the state directly upon successful `POST/PUT/DELETE` mutations.
+- **Loading & Errors:** Use shimmer effects when fetching. Show snackbars for validation errors returned from the API (e.g., if you sell more eggs than available).
+
+---
+
+## 5. Detailed UI Features & Screens
+
+### 5.1 Dashboard Screen
+- **Overview:** Central hub showing farm status.
+- **Key Metrics (Top Summary Cards):** Scrollable row showing Total Revenue, Total Profit, Eggs Produced, Production Percentage, Current Stock, Total Operational Cost.
+- **Charts:** Use `fl_chart` for Line/Bar charts showing Eggs Produced vs Damaged, Revenue vs Cost, Profit margins, and Mortality over time. Include a dropdown for time filtering (Daily, Weekly, Monthly, Yearly).
+- **Timeline UI:** Vertical timeline showing recent/upcoming treatments for the active batch.
+
+### 5.2 Batch Management Screen
+- **List View:** Display all batches (Name, Status, Start Date).
+- **Create Form:** Batch Name, Start Date, End Date, Starting Hen Count (>0). 
+- **Validation:** End Date > Start Date. Show info: "System handles phase assignments automatically."
+
+### 5.3 Egg Management Screen
+- **Top Stats:** Total Produced, Total Profit, Available Stock, Total Sold, Total Damaged.
+- **Controls Row:** Search bar, PDF/Excel export buttons, "Add Record" FAB.
+- **Data List/Table:** Date, Batch Name, Alive Hens, Produced, Production %, Total Profit. Tap an item to open a detailed Modal/Bottom Sheet (Financials, Sales amount).
+- **Form Validation Logic:** `(Eggs Sold + Damaged Eggs) MUST NOT EXCEED (Eggs Produced today + Current Stock)`. Prevent submission if violated.
+
+### 5.4 Worker Management Screens
+- **List Screen:** Worker cards (Name, Active badge, Role).
+- **Profile Screen (Tabs):**
+  - *Overview:* Contact, Default Wage.
+  - *Attendance:* Calendar/List of Present/Absent/Half Day records. Button to add Daily Entry.
+  - *Payments:* History of salary payouts. Button to Add Payment (Amount, Date, Method).
+
+## 6. Mobile Specific UX/UI Guidelines
+- **Theme:** Material 3 (M3) with a cohesive color palette (Primary, Success for profits, Danger for mortality, Warning for alerts). Support Light/Dark modes.
+- **Inputs:** Use context-aware keyboards (`TextInputType.numberWithOptions(decimal: true)`).
+- **Navigation:** Bottom Navigation Bar (Dashboard, Eggs, Feed, More).
+- **Offline States:** Empty state illustrations with "Retry" buttons for API failures.

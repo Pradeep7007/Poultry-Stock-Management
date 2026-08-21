@@ -1,0 +1,151 @@
+# ORIGINAL MERN Poultry Management System - Verified Audit Report
+
+This document is a strict, evidence-based audit of the ACTUAL source code in the MERN project located at `f:\Project\poultry`. It documents ONLY what is explicitly implemented in the codebase.
+
+---
+
+## A. MERN Project Structure
+- **Frontend (`client/`)**: React.js application built with Vite. Uses Axios for API calls, React Query (`@tanstack/react-query`) for state management and data fetching, and `react-hot-toast` for notifications.
+- **Backend (`server/`)**: Node.js/Express.js REST API with Mongoose for MongoDB data modeling. Features a Google Sheets sync integration.
+
+---
+
+## B. Verified Mongoose Models/Schemas
+*Location: `server/models/`*
+
+1. **Batch** (`Batch.js`)
+   - **Fields**: `name` (String, Required), `startDate` (Date, Required), `endDate` (Date, Required), `startedHens` (Number, Required, Min: 1), `aliveHens` (Number, Required, Min: 0), `status` (String, Enum: ['Active', 'Completed'], Default: 'Active'), `phase` (String, Default: 'Phase 1'), `enteredBy` (String, Required).
+2. **EggEntry** (`EggEntry.js`)
+   - **Fields**: `name` (String, Required), `date` (Date, Required), `aliveHens` (Number, Required, Min: 1), `eggsProduced` (Number, Required, Min: 0), `productionPercentage` (Number, Default: 0), `eggsSold` (Number, Required, Min: 0), `damagedEggs` (Number, Min: 0, Default: 0), `eggPrice` (Number, Required, Min: 0.01), `salesAmount` (Number, Required), `profitPerEgg` (Number, Min: 0, Default: 0), `profit` (Number, Default: 0), `enteredBy` (String, Required).
+3. **FeedEntry** (`FeedEntry.js`)
+   - **Fields**: `name` (String, Required), `date` (Date, Required), `feedWeight` (Number, Required, Min: 0.01), `feedCost` (Number, Required, Min: 0.01), `feedType` (String), `supplier` (String), `enteredBy` (String, Required).
+4. **HenDeath** (`HenDeath.js`)
+   - **Fields**: `name` (String, Required), `date` (Date, Required), `deadToday` (Number, Required, Min: 0), `batchId` (ObjectId, ref: 'Batch'), `enteredBy` (String, Required).
+5. **MedicineEntry** (`MedicineEntry.js`)
+   - **Fields**: `name` (String, Required), `batchId` (ObjectId, ref: 'Batch', Required), `date` (Date, Required), `type` (String, Enum: ['Medicine', 'Vaccine'], Required), `medicineName` (String, Required), `dosage` (String, Required), `quantity` (Number, Required, Min: 1), `unitType` (String, Enum: ['Packet', 'Bottle'], Default: 'Packet'), `cost` (Number, Required, Min: 0.01), `notes` (String), `enteredBy` (String, Required).
+6. **Worker** (`Worker.js`)
+   - **Fields**: `name` (String, Required), `status` (String, Enum: ['Active', 'Inactive'], Default: 'Active'), `enteredBy` (String, Required), `dateAdded` (Date, Default: Date.now), `defaultDailyWage` (Number, Required, Min: 0), `phoneNumber` (String), `address` (String), `jobRole` (String), `notes` (String).
+7. **DailyWorkEntry** (`DailyWorkEntry.js`)
+   - **Fields**: `workerId` (ObjectId, ref: 'Worker', Required), `date` (Date, Required), `attendance` (String, Enum: ['Present', 'Absent', 'Half Day', 'Leave'], Required), `dailyWage` (Number, Required, Min: 0), `workDetails` (String), `createdBy` (String, Required).
+8. **SalaryPayment** (`SalaryPayment.js`)
+   - **Fields**: `workerId` (ObjectId, ref: 'Worker', Required), `paymentDate` (Date, Required), `amount` (Number, Required, Min: 0), `paymentMethod` (String, Enum: ['Cash', 'Bank Transfer', 'UPI', 'Other'], Required), `notes` (String).
+9. **WorkAssignment** (`WorkAssignment.js`)
+   - **Fields**: `workerId` (ObjectId, ref: 'Worker', Required), `workName` (String, Required), `workDate` (Date, Required), `createdBy` (String, Required).
+
+---
+
+## C. Verified Express Routes
+*Location: `server/routes/`*
+- `batchRoutes.js`
+- `eggRoutes.js`
+- `feedRoutes.js`
+- `henRoutes.js`
+- `medicineRoutes.js`
+- `workerRoutes.js`
+
+---
+
+## D. Verified API Endpoints & CRUD Matrix
+*Standard CRUD exists for all core entities:*
+- **Batches**: `GET /api/batches`, `POST /api/batches`, `PUT /api/batches/:id`, `DELETE /api/batches/:id`
+- **Eggs**: `GET /api/eggs`, `POST /api/eggs`, `PUT /api/eggs/:id`, `DELETE /api/eggs/:id`
+- **Feed**: `GET /api/feed`, `POST /api/feed`, `PUT /api/feed/:id`, `DELETE /api/feed/:id`
+- **Hens**: `GET /api/hens`, `POST /api/hens`, `PUT /api/hens/:id`, `DELETE /api/hens/:id`
+- **Vaccines**: `GET /api/vaccines`, `POST /api/vaccines`, `PUT /api/vaccines/:id`, `DELETE /api/vaccines/:id`
+- **Workers Base**: `GET /api/workers`, `POST /api/workers`, `GET /api/workers/:id`, `PUT /api/workers/:id`, `DELETE /api/workers/:id`
+- **Worker Sub-routes**:
+  - `GET /api/workers/payment-summary`
+  - `GET /api/workers/daily-entries`
+  - `POST /api/workers/bulk-attendance`
+  - `POST /api/workers/assignments`
+  - `POST /api/workers/attendance`
+  - `POST /api/workers/:id/entries`, `PUT /api/workers/:id/entries/:entryId`, `DELETE /api/workers/:id/entries/:entryId`
+  - `POST /api/workers/:id/payments`, `PUT /api/workers/:id/payments/:paymentId`, `DELETE /api/workers/:id/payments/:paymentId`
+
+---
+
+## E & F. API Request / Response Structures
+- **Requests**: Standard JSON payloads directly matching the Mongoose schemas.
+- **Responses**: Wrapped in JSON. Example: `{ message: 'Success', data: { ... }, sheetSync: true/false }`. 
+  *(Note: `sheetSync` is a custom backend return property indicating if data was successfully synced to Google Sheets).*
+
+---
+
+## G. Authentication Flow
+- **VERIFIED FINDING**: There is **NO** backend authentication or security implemented in the Express API.
+- **Implementation**: Authentication is strictly a client-side facade (`client/src/pages/Login.jsx`). It hardcodes credentials checking: `if ((username === 'pms' && password === '26082006') || (username === 'pradeep' && password === '2006'))`.
+- **Missing Elements**: No JWTs, no cookies, no auth middleware, no backend protected routes.
+
+---
+
+## H. Database Operations
+Standard Mongoose operations executed inside `server/controllers/`:
+- `Model.find()`, `Model.create()`, `Model.findByIdAndUpdate()`, `Model.findByIdAndDelete()`.
+
+---
+
+## I. React Pages/Components
+All confirmed components mapped in `client/src/pages`:
+- `Dashboard.jsx` (KPI Metrics, ChartJS data visualization)
+- `BatchCreation.jsx` (Initialize Batches)
+- `EggManagement.jsx` (Egg CRUD)
+- `FeedManagement.jsx` (Feed CRUD)
+- `HenManagement.jsx` (Mortality CRUD)
+- `VaccineManagement.jsx` (Medicines/Vaccines CRUD)
+- `WorkerManagement.jsx` (Worker list & bulk actions)
+- `WorkerDetails.jsx` (Worker profile, payments, attendance logs)
+- `Login.jsx` (Client-side auth wall)
+
+---
+
+## J. React → API Mapping
+- `Dashboard.jsx` → Multiple GETs via React Query (`fetchEggs`, `fetchVaccines`, `fetchBatches`, `fetchFeed`, `fetchHens`).
+- `EggManagement.jsx` → `POST /api/eggs`, `PUT /api/eggs/:id`, `DELETE /api/eggs/:id`
+- *(Other components strictly follow a 1:1 mapping with their respective routes)*.
+
+---
+
+## K. Model Relationships
+- `HenDeath` and `MedicineEntry` reference `Batch` via the `batchId` (ObjectId) field.
+- `DailyWorkEntry`, `SalaryPayment`, and `WorkAssignment` reference `Worker` via the `workerId` (ObjectId) field.
+
+---
+
+## L. Environment Variables & API Configuration
+- Frontend (`client/src/services/api.js`): Uses `axios.create({ baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api' })`.
+- Backend (`server/.env`): Contains `PORT=5000`, `MONGODB_URI`, `GOOGLE_SHEETS_CLIENT_EMAIL`, and `SPREADSHEET_ID`.
+
+---
+
+## M. CRUD Capability Matrix
+- **Batches**: C, R, U, D
+- **Eggs**: C, R, U, D
+- **Feed**: C, R, U, D
+- **Hens (Mortality)**: C, R, U, D
+- **Medicine**: C, R, U, D
+- **Worker**: C, R, U, D
+- **Daily Work**: C, R, U, D
+- **Payments**: C, R, U, D
+
+---
+
+## N, O, P. Discrepancies & Unconfirmed Items
+- **Authentication**: *Documented but not implemented on the backend*. The frontend simulates it, but the REST API is completely open to the public.
+- **Google Sheets Sync**: *Implemented but not fully documented*. The backend controllers attempt to sync production data to a Google Spreadsheet using service account credentials.
+
+---
+
+## Q. VERIFIED MERN ARCHITECTURE
+```text
+React (Client-Side Auth Wall via Login.jsx)
+  ↓
+Axios (client/src/services/api.js) -> React Query cache
+  ↓
+Express Routes (/api/eggs, /api/batches, /api/feed, /api/hens, /api/vaccines, /api/workers)
+  ↓
+Controllers (server/controllers/*Controller.js - includes logic to sync with Google Sheets)
+  ↓
+Mongoose Models (Batch, EggEntry, FeedEntry, HenDeath, MedicineEntry, Worker, DailyWorkEntry, SalaryPayment)
+  ↓
+MongoDB Database
+```

@@ -1,4 +1,6 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -12,6 +14,15 @@ const workerRoutes = require('./routes/workerRoutes');
 connectDB();
 const app = express();
 
+const corsOptions = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+  credentials: false
+};
+
+app.use(cors(corsOptions));
+
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
@@ -21,7 +32,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors());
 app.use(express.json());
 
 app.use('/api/eggs', eggRoutes);
@@ -40,8 +50,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Backend server running on http://127.0.0.1:${PORT}`);
   });
 }
 
@@ -50,4 +60,3 @@ app.get("/", (req, res) => {
 });
 
 module.exports = app;
-

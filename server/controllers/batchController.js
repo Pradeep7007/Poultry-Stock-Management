@@ -78,4 +78,45 @@ const getBatches = async (req, res) => {
   }
 };
 
-module.exports = { createBatch, getBatches };
+// @desc    Update a batch
+// @route   PUT /api/batches/:id
+const updateBatch = async (req, res) => {
+  try {
+    const { name, startDate, endDate, startedHens, aliveHens, status, phase } = req.body;
+    
+    const batch = await Batch.findById(req.params.id);
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found' });
+    }
+
+    batch.name = name || batch.name;
+    batch.startDate = startDate || batch.startDate;
+    batch.endDate = endDate || batch.endDate;
+    batch.startedHens = startedHens ?? batch.startedHens;
+    batch.aliveHens = aliveHens ?? batch.aliveHens;
+    batch.status = status || batch.status;
+    batch.phase = phase || batch.phase;
+
+    const updatedBatch = await batch.save();
+    res.json({ message: 'Batch updated successfully', data: updatedBatch });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete a batch
+// @route   DELETE /api/batches/:id
+const deleteBatch = async (req, res) => {
+  try {
+    const batch = await Batch.findById(req.params.id);
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found' });
+    }
+    await batch.deleteOne();
+    res.json({ message: 'Batch deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createBatch, getBatches, updateBatch, deleteBatch };

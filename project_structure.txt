@@ -1,0 +1,101 @@
+# Poultry Stock Management Application - Full Structure & Features
+
+## 1. Overall Application Flow
+The application provides a comprehensive suite to manage poultry farm operations. The general workflow is:
+1. **Authentication:** Users log into the system (via Login page).
+2. **Batch Initialization:** A new flock of birds is introduced by creating a Batch. All subsequent activities (eggs, feed, vaccines) are tied to an active batch.
+3. **Daily Operations Entry:** Users input daily statistics including hen mortality, feed consumption, egg production and sales, and medical treatments.
+4. **Worker Management:** Manage farm workers, their daily attendance, work assignments, and salary payouts.
+5. **Analytics & Monitoring:** The Dashboard aggregates all daily operational data into actionable insights (KPIs, Charts) with date filtering.
+
+---
+
+## 2. Page Specific Features & Input Conditions
+
+### 2.1 Dashboard (`/dashboard`)
+*   **Features:**
+    *   **KPI Summary:** Total Revenue, Total Profit, Eggs Produced, Production %, Current Stock, Operational Cost (Medicine, Vaccine, Feed).
+    *   **Customizable Analytics Charts:** Users can toggle line/bar/area charts for Eggs Produced, Damaged, Sales, Revenue, Feed Cost, Treatment Cost, Profit, and Mortality.
+    *   **Date Filtering:** Daily, Weekly, Monthly, Yearly, and Custom date range views.
+    *   **Timeline:** Displays a chronological timeline of treatments (vaccines/medicines) for the currently active batch.
+
+### 2.2 Batch Creation (`/batches`)
+*   **Features:** Initialize and track lifecycles of hen batches. Only active batches can receive new operational entries.
+*   **Input Values & Conditions:**
+    *   `name`: Batch Name (String, Required, Trimmed). Unique identifier.
+    *   `startDate`: Start Date (Date, Required).
+    *   `endDate`: End Date (Date, Required).
+    *   `startedHens`: Initial Hen Count (Number, Required, Minimum: 1).
+    *   `status`: Status (Dropdown, Default: 'Active'. Options: 'Active', 'Completed').
+    *   `phase`: Lifecycle Phase (String, Default: 'Phase 1').
+
+### 2.3 Hen Management / Mortality (`/hens`)
+*   **Features:** Track daily hen deaths to maintain an accurate count of alive hens, which is critical for calculating production percentages.
+*   **Input Values & Conditions:**
+    *   `batchId` / `name`: Associated Batch (Dropdown/String, Required).
+    *   `date`: Entry Date (Date, Required).
+    *   `deadToday`: Dead Hens Count (Number, Required, Minimum: 0).
+
+### 2.4 Egg Management (`/eggs`)
+*   **Features:** Log daily egg production, calculate production percentages based on alive hens, and record sales revenue.
+*   **Input Values & Conditions:**
+    *   `name`: Associated Batch (String, Required).
+    *   `date`: Entry Date (Date, Required).
+    *   `eggsProduced`: Eggs Produced (Number, Required, Minimum: 0).
+    *   `eggsSold`: Eggs Sold (Number, Required, Minimum: 0).
+    *   `damagedEggs`: Damaged Eggs (Number, Default: 0, Minimum: 0).
+    *   `eggPrice`: Price per Egg (Number, Required, Minimum: 0.01).
+    *   *(Auto-calculated fields: `aliveHens`, `productionPercentage`, `salesAmount`, `profitPerEgg`, `profit`)*
+
+### 2.5 Feed Management (`/feed`)
+*   **Features:** Track feed consumption and costs to calculate operational expenses.
+*   **Input Values & Conditions:**
+    *   `name`: Associated Batch (String, Required).
+    *   `date`: Entry Date (Date, Required).
+    *   `feedWeight`: Feed Weight in kg/lbs (Number, Required, Minimum: 0.01).
+    *   `feedCost`: Total Feed Cost (Number, Required, Minimum: 0.01).
+    *   `feedType`: Feed Type (String, Optional).
+    *   `supplier`: Supplier Name (String, Optional).
+
+### 2.6 Vaccine & Medicine Management (`/vaccines`)
+*   **Features:** Record medical treatments applied to batches, track dosage, and monitor treatment costs.
+*   **Input Values & Conditions:**
+    *   `batchId` / `name`: Associated Batch (String/ObjectId, Required).
+    *   `date`: Entry Date (Date, Required).
+    *   `type`: Record Type (Dropdown, Required. Options: 'Medicine', 'Vaccine').
+    *   `medicineName`: Name of Medicine/Vaccine (String, Required).
+    *   `dosage`: Dosage Amount (String, Required).
+    *   `quantity`: Quantity Used (Number, Required, Minimum: 1).
+    *   `unitType`: Unit (Dropdown, Default: 'Packet'. Options: 'Packet', 'Bottle').
+    *   `cost`: Total Cost (Number, Required, Minimum: 0.01).
+    *   `notes`: Additional Notes (String, Optional).
+
+### 2.7 Worker Management (`/workers` & `/workers/:id`)
+*   **Features:** Register farm workers, track daily attendance and wages, assign specific tasks, and manage salary payouts.
+
+*   **Worker Registration Inputs:**
+    *   `name`: Worker Name (String, Required).
+    *   `status`: Employment Status (Dropdown, Default: 'Active'. Options: 'Active', 'Inactive').
+    *   `defaultDailyWage`: Base Daily Wage (Number, Required, Minimum: 0).
+    *   `phoneNumber`: Contact Number (String, Optional).
+    *   `jobRole`: Designation (String, Optional).
+    *   `address`, `notes`: Additional info (Strings, Optional).
+
+*   **Daily Work / Attendance Inputs:**
+    *   `workerId`: Target Worker (ObjectId, Required).
+    *   `date`: Entry Date (Date, Required).
+    *   `attendance`: Status (Dropdown, Required. Options: 'Present', 'Absent', 'Half Day', 'Leave').
+    *   `dailyWage`: Wage for the day (Number, Required, Minimum: 0).
+    *   `workDetails`: Task summary (String, Optional).
+
+*   **Salary Payment Inputs:**
+    *   `workerId`: Target Worker (ObjectId, Required).
+    *   `paymentDate`: Date of Payment (Date, Required).
+    *   `amount`: Payout Amount (Number, Required, Minimum: 0).
+    *   `paymentMethod`: Mode of Payment (Dropdown, Required. Options: 'Cash', 'Bank Transfer', 'UPI', 'Other').
+    *   `notes`: Payment remarks (String, Optional).
+
+*   **Work Assignment Inputs:**
+    *   `workerId`: Target Worker (ObjectId, Required).
+    *   `workName`: Assigned Task (String, Required).
+    *   `workDate`: Date of Task (Date, Required).

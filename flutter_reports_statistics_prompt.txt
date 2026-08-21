@@ -1,0 +1,114 @@
+# Flutter Implementation Prompt: Statistics and Reporting Engine
+
+You are an expert Flutter developer. Your task is to implement the statistics, KPI calculations, and reporting logic in the Flutter application EXACTLY as they were implemented in the original MERN React frontend. 
+
+In the MERN app, the backend returns raw entries (Batches, Eggs, Feed, Hens, Vaccines), and the **frontend is responsible for aggregating and calculating all statistics dynamically**. You must replicate this client-side aggregation logic in Flutter (using Riverpod or providers to compute derived state).
+
+## 1. Core State Dependencies
+To calculate accurate statistics, your reports/dashboard providers must fetch and combine data from:
+- `List<Batch>`
+- `List<EggEntry>`
+- `List<HenDeath>`
+- `List<FeedEntry>`
+- `List<MedicineEntry>`
+
+## 2. Egg Management Statistics Logic
+When viewing the Egg Management screen, calculate the top summary cards as follows:
+
+```dart
+// 1. Total Produced
+int totalProduced = eggEntries.fold(0, (sum, entry) => sum + entry.eggsProduced);
+
+// 2. Total Sold
+int totalSold = eggEntries.fold(0, (sum, entry) => sum + entry.eggsSold);
+
+// 3. Total Damaged
+int totalDamaged = eggEntries.fold(0, (sum, entry) => sum + (entry.damagedEggs ?? 0));
+
+// 4. Available Stock (CRITICAL LOGIC)
+int availableStock = totalProduced - totalSold - totalDamaged;
+
+// 5. Total Profit
+double totalProfit = eggEntries.fold(0.0, (sum, entry) => sum + (entry.profit ?? 0.0));
+```
+
+### Form Validation Logic
+Before submitting a new Egg Entry or updating one:
+```dart
+int newStockAfterSale = availableStock + eggsProducedToday;
+if ((eggsSoldToday + damagedEggsToday) > newStockAfterSale) {
+  throw Exception('Eggs sold and damaged cannot exceed eggs produced today plus available stock.');
+}
+```
+
+## 3. Dynamic "Alive Hens" & "Production %" Calculation
+The most complex logic in the MERN app is calculating how many hens were alive on a *specific date* for a *specific batch* to determine the Production Percentage.
+
+Replicate this exact logic for every Egg Entry:
+```dart
+// For a given EggEntry (entry) on entry.date for batch (entry.name):
+Batch? batch = batches.firstWhere((b) => b.name == entry.name);
+
+if (batch != null) {
+  // 1. Find all HenDeath records for this batch ON OR BEFORE the egg entry date
+  List<HenDeath> deathsUpToDate = henDeaths.where((d) => 
+    d.batchId == batch.id && d.date.isBefore(entry.date) || d.date.isAtSameMomentAs(entry.date)
+  ).toList();
+
+  // 2. Sum the dead hens
+  int totalDead = deathsUpToDate.fold(0, (sum, d) => sum + d.deadToday);
+
+  // 3. Calculate Alive Hens on that date
+  int aliveHensOnDate = batch.startedHens - totalDead;
+  if (aliveHensOnDate < 0) aliveHensOnDate = 0;
+
+  // 4. Calculate Production Percentage
+  double productionPercentage = aliveHensOnDate > 0 
+      ? (entry.eggsProduced / aliveHensOnDate) * 100 
+      : 0.0;
+}
+```
+
+## 4. Dashboard KPIs & Operational Costs
+The Dashboard aggregates costs across all batches.
+
+```dart
+// 1. Total Medicine & Vaccine Cost
+double totalMedicineCost = vaccines.where((v) => v.type == 'Medicine').fold(0.0, (sum, v) => sum + v.cost);
+double totalVaccineCost = vaccines.where((v) => v.type == 'Vaccine').fold(0.0, (sum, v) => sum + v.cost);
+
+// 2. Total Feed Cost
+double totalFeedCost = feeds.fold(0.0, (sum, f) => sum + f.feedCost);
+
+// 3. Total Operational Cost
+double totalOperationalCost = totalMedicineCost + totalVaccineCost + totalFeedCost;
+
+// 4. Treatment Cost Per Hen (Based on ACTIVE batch only)
+Batch? activeBatch = batches.firstWhere((b) => b.status == 'Active');
+double treatmentPerHen = (activeBatch != null && activeBatch.aliveHens > 0)
+    ? (totalMedicineCost + totalVaccineCost) / activeBatch.aliveHens
+    : 0.0;
+```
+
+## 5. Chart Data Grouping (Date Filtering)
+The Dashboard charts support filtering (Daily, Weekly, Monthly, Yearly).
+You must group the raw entries by the selected date format. 
+
+For example, if grouped by **Month**:
+1. Iterate over `eggEntries`, `feedEntries`, `medicineEntries`, and `henDeaths`.
+2. Map the date to a string key (e.g., `"2026-08"`).
+3. Sum the values for that key:
+   - `eggsProduced` += `entry.eggsProduced`
+   - `eggSales` += `entry.eggsSold`
+   - `eggsDamaged` += `entry.damagedEggs`
+   - `profit` += `entry.profit`
+   - `revenue` += `entry.salesAmount`
+   - `feedCost` += `feed.feedCost`
+   - `treatmentCost` += `medicine.cost`
+   - `mortality` += `henDeath.deadToday`
+4. Feed this aggregated Map/Dictionary into your Flutter Charting library (`fl_chart` or `syncfusion_flutter_charts`).
+
+## 6. Implementation Architecture in Flutter
+1. **Providers:** Create a Riverpod provider named `statisticsProvider` that `watches` the `eggProvider`, `batchProvider`, `henDeathProvider`, etc.
+2. **Computed State:** This provider should do all the math defined above and expose a `StatisticsState` object containing all the KPI doubles/ints.
+3. **UI Binding:** The UI (Dashboard, Egg Management Top Cards) simply listens to `statisticsProvider` and displays the pre-calculated numbers.
