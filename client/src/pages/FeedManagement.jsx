@@ -48,13 +48,13 @@ const FeedManagement = () => {
 
   // Keep enteredBy synced with logged-in user when creating new entry
   useEffect(() => {
-    if (!isEditing && !formData.id) {
+    if (!isEditing && (!formData.id || !formData.enteredBy)) {
       setFormData(prev => ({
         ...prev,
-        enteredBy: currentUserName
+        enteredBy: currentUserName || ''
       }));
     }
-  }, [currentUserName, isEditing]);
+  }, [currentUserName, isEditing, showForm]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -404,7 +404,7 @@ const FeedManagement = () => {
                   className="form-control-modern w-100"
                   name="currentFeedWeightInSilo"
                   placeholder="e.g. 1500"
-                  value={formData.currentFeedWeightInSilo}
+                  value={formData.currentFeedWeightInSilo || ''}
                   onChange={e => setFormData({ ...formData, currentFeedWeightInSilo: e.target.value })}
                 />
               </div>
@@ -421,7 +421,7 @@ const FeedManagement = () => {
                   className="form-control-modern w-100"
                   name="purchasedFeedWeightInSilo"
                   placeholder="e.g. 500"
-                  value={formData.purchasedFeedWeightInSilo}
+                  value={formData.purchasedFeedWeightInSilo || ''}
                   onChange={e => setFormData({ ...formData, purchasedFeedWeightInSilo: e.target.value })}
                   required
                 />
@@ -435,7 +435,7 @@ const FeedManagement = () => {
                   className="form-control-modern w-100"
                   name="supplier"
                   placeholder="e.g. Quality Feeds Ltd"
-                  value={formData.supplier}
+                  value={formData.supplier || ''}
                   onChange={e => setFormData({ ...formData, supplier: e.target.value })}
                 />
               </div>
@@ -452,7 +452,7 @@ const FeedManagement = () => {
                   className="form-control-modern w-100"
                   name="feedCost"
                   placeholder="e.g. 12500"
-                  value={formData.feedCost}
+                  value={formData.feedCost || ''}
                   onChange={e => setFormData({ ...formData, feedCost: e.target.value })}
                   required
                 />
@@ -467,7 +467,7 @@ const FeedManagement = () => {
                   type="text"
                   className="form-control-modern w-100 bg-light"
                   name="enteredBy"
-                  value={formData.enteredBy}
+                  value={formData.enteredBy || ''}
                   onChange={e => setFormData({ ...formData, enteredBy: e.target.value })}
                   required
                   placeholder="Logged in user"
