@@ -6,7 +6,6 @@ You are an expert Flutter developer. Your task is to develop a comprehensive Flu
 - **Project Name:** Poultry-app
 - **Framework:** Flutter (using Riverpod for state management, Dio for API calls, go_router for navigation, and freezed for data classes).
 - **Backend API Base URL:** `http://localhost:5000` (or the deployed backend URL).
-- **MongoDB URI:** `mongodb+srv://pmspradeep007_db_user:JZHgddVfyqke3lol@pmspoulty.mdylzge.mongodb.net/?appName=pmspoulty`
 
 ---
 
