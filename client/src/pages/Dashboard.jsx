@@ -24,7 +24,7 @@ const DEFAULT_CHART_CONFIG = [
   {
     id: 'eggsProduced',
     title: 'Eggs Produced',
-    enabled: false,
+    enabled: true,
     chartType: 'line',
     color: '#3B82F6',
     bgColor: 'rgba(59, 130, 246, 0.1)',
@@ -51,7 +51,7 @@ const DEFAULT_CHART_CONFIG = [
   {
     id: 'revenue',
     title: 'Revenue',
-    enabled: false,
+    enabled: true,
     chartType: 'line',
     color: '#F59E0B',
     bgColor: 'rgba(245, 158, 11, 0.1)',
@@ -60,7 +60,7 @@ const DEFAULT_CHART_CONFIG = [
   {
     id: 'feedCost',
     title: 'Feed Cost',
-    enabled: false,
+    enabled: true,
     chartType: 'line',
     color: '#8B5CF6',
     bgColor: 'rgba(139, 92, 246, 0.1)',
@@ -78,7 +78,7 @@ const DEFAULT_CHART_CONFIG = [
   {
     id: 'profit',
     title: 'Profit',
-    enabled: false,
+    enabled: true,
     chartType: 'line',
     color: '#4F46E5',
     bgColor: 'rgba(79, 70, 229, 0.1)',
@@ -87,7 +87,7 @@ const DEFAULT_CHART_CONFIG = [
   {
     id: 'mortality',
     title: 'Mortality',
-    enabled: false,
+    enabled: true,
     chartType: 'line',
     color: '#EF4444',
     bgColor: 'rgba(239, 68, 68, 0.1)',
@@ -159,16 +159,16 @@ const DEFAULT_CHART_CONFIG = [
     const now = new Date();
     
     if (dateFilter === 'daily') {
-      const past = new Date(now.setDate(now.getDate() - 7)); // Last 7 days for daily
+      const past = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       filtered = filtered.filter(e => new Date(e.date) >= past);
     } else if (dateFilter === 'weekly') {
-      const past = new Date(now.setDate(now.getDate() - 30));
+      const past = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       filtered = filtered.filter(e => new Date(e.date) >= past);
     } else if (dateFilter === 'monthly') {
-      const past = new Date(now.setMonth(now.getMonth() - 6));
+      const past = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
       filtered = filtered.filter(e => new Date(e.date) >= past);
     } else if (dateFilter === 'yearly') {
-      const past = new Date(now.setFullYear(now.getFullYear() - 5));
+      const past = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
       filtered = filtered.filter(e => new Date(e.date) >= past);
     } else if (dateFilter === 'custom' && customStart && customEnd) {
       filtered = filtered.filter(e => new Date(e.date) >= new Date(customStart) && new Date(e.date) <= new Date(customEnd));
@@ -224,19 +224,20 @@ const DEFAULT_CHART_CONFIG = [
     : [];
 
   const isWithinFilter = (dateStr) => {
+    if (dateFilter === 'all') return true;
     const d = new Date(dateStr);
     const now = new Date();
     if (dateFilter === 'daily') {
-      const past = new Date(now.setDate(now.getDate() - 7));
+      const past = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       return d >= past;
     } else if (dateFilter === 'weekly') {
-      const past = new Date(now.setDate(now.getDate() - 30));
+      const past = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       return d >= past;
     } else if (dateFilter === 'monthly') {
-      const past = new Date(now.setMonth(now.getMonth() - 6));
+      const past = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
       return d >= past;
     } else if (dateFilter === 'yearly') {
-      const past = new Date(now.setFullYear(now.getFullYear() - 5));
+      const past = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
       return d >= past;
     } else if (dateFilter === 'custom' && customStart && customEnd) {
       return d >= new Date(customStart) && d <= new Date(customEnd);
@@ -408,6 +409,7 @@ const DEFAULT_CHART_CONFIG = [
                   setShowCustom(e.target.value === 'custom');
                 }}
               >
+                <option value="all">All Time View</option>
                 <option value="daily">Daily View</option>
                 <option value="weekly">Weekly View</option>
                 <option value="monthly">Monthly View</option>

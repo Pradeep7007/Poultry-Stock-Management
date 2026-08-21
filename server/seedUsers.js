@@ -15,7 +15,7 @@ const seed = async () => {
       pmsUser = new User({
         username: 'pms',
         email: 'pms@poultry.com',
-        fullName: 'PMS Admin',
+        fullName: 'Pradeep',
         role: 'Admin'
       });
       pmsUser.setPassword('26082006');
