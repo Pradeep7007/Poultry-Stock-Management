@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User as UserIcon, UserPlus } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User as UserIcon, UserPlus, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const Login = ({ onLogin }) => {
   const { login, signup } = useAuth();
 
-  const [mode, setMode] = useState('login'); // 'login' or 'signup'
+  const [mode, setMode] = useState('login'); // 'login', 'signup', or 'forgot'
   
   // Login Form States
   const [username, setUsername] = useState('');
@@ -17,6 +18,10 @@ const Login = ({ onLogin }) => {
   const [signupUsername, setSignupUsername] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+
+  // Forgot Password States
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +65,30 @@ const Login = ({ onLogin }) => {
       if (onLogin) onLogin();
     } else {
       toast.error(res.message || 'Signup failed.');
+    }
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    if (!forgotUsername || !forgotNewPassword) {
+      toast.error('Please fill in all required fields.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await api.post('/auth/reset-password', {
+        username: forgotUsername,
+        newPassword: forgotNewPassword
+      });
+      setIsLoading(false);
+      toast.success(response.data.message || 'Password reset successfully!');
+      setUsername(forgotUsername);
+      setMode('login');
+    } catch (error) {
+      setIsLoading(false);
+      const errMsg = error.response?.data?.message || 'Failed to reset password.';
+      toast.error(errMsg);
     }
   };
 
@@ -117,22 +146,24 @@ const Login = ({ onLogin }) => {
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="d-flex bg-light p-1 rounded-3 mb-4 border">
-            <button
-              type="button"
-              className={`btn flex-fill py-2 fw-semibold btn-sm ${mode === 'login' ? 'btn-white shadow-sm text-primary bg-white' : 'text-muted border-0'}`}
-              onClick={() => setMode('login')}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              className={`btn flex-fill py-2 fw-semibold btn-sm ${mode === 'signup' ? 'btn-white shadow-sm text-primary bg-white' : 'text-muted border-0'}`}
-              onClick={() => setMode('signup')}
-            >
-              Sign Up
-            </button>
-          </div>
+          {mode !== 'forgot' && (
+            <div className="d-flex bg-light p-1 rounded-3 mb-4 border">
+              <button
+                type="button"
+                className={`btn flex-fill py-2 fw-semibold btn-sm ${mode === 'login' ? 'btn-white shadow-sm text-primary bg-white' : 'text-muted border-0'}`}
+                onClick={() => setMode('login')}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                className={`btn flex-fill py-2 fw-semibold btn-sm ${mode === 'signup' ? 'btn-white shadow-sm text-primary bg-white' : 'text-muted border-0'}`}
+                onClick={() => setMode('signup')}
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
 
           {mode === 'login' ? (
             <div>
@@ -161,6 +192,13 @@ const Login = ({ onLogin }) => {
                     <label className="form-label small fw-semibold text-muted mb-0 d-flex align-items-center gap-2">
                       <Lock size={16} /> Password
                     </label>
+                    <button
+                      type="button"
+                      className="btn btn-link p-0 text-primary small text-decoration-none fw-semibold"
+                      onClick={() => { setForgotUsername(username); setMode('forgot'); }}
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                   <div className="position-relative">
                     <input
@@ -182,18 +220,20 @@ const Login = ({ onLogin }) => {
                   </div>
                 </div>
 
-                <div className="form-check d-flex align-items-center gap-2">
-                  <input
-                    className="form-check-input mt-0"
-                    type="checkbox"
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <label className="form-check-label small text-muted" htmlFor="rememberMe" style={{ cursor: 'pointer' }}>
-                    Remember me
-                  </label>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="form-check d-flex align-items-center gap-2 m-0">
+                    <input
+                      className="form-check-input mt-0"
+                      type="checkbox"
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <label className="form-check-label small text-muted" htmlFor="rememberMe" style={{ cursor: 'pointer' }}>
+                      Remember me
+                    </label>
+                  </div>
                 </div>
 
                 <button
@@ -209,6 +249,78 @@ const Login = ({ onLogin }) => {
                   ) : (
                     <>
                       <span>Sign In</span>
+                      <ArrowRight size={20} />
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          ) : mode === 'forgot' ? (
+            <div className="animate-fade-in">
+              <div className="mb-4">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-light border mb-3 d-inline-flex align-items-center gap-1"
+                  onClick={() => setMode('login')}
+                >
+                  <ArrowLeft size={16} /> Back to Sign In
+                </button>
+                <h2 className="fw-bold mb-1">Reset Password</h2>
+                <p className="text-muted small">Enter your username or email address and choose a new password.</p>
+              </div>
+
+              <form onSubmit={handleResetSubmit} className="d-flex flex-column gap-3">
+                <div className="position-relative">
+                  <label className="form-label small fw-semibold text-muted mb-1 d-flex align-items-center gap-2">
+                    <Mail size={16} /> Username or Email
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control-modern w-100"
+                    placeholder="Enter your username or email"
+                    value={forgotUsername}
+                    onChange={(e) => setForgotUsername(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="position-relative">
+                  <label className="form-label small fw-semibold text-muted mb-1 d-flex align-items-center gap-2">
+                    <KeyRound size={16} /> New Password
+                  </label>
+                  <div className="position-relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className="form-control-modern w-100 pe-5"
+                      placeholder="Enter new password"
+                      value={forgotNewPassword}
+                      onChange={(e) => setForgotNewPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn border-0 position-absolute top-50 end-0 translate-middle-y text-muted"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex="-1"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-primary-modern w-100 py-3 mt-2 fs-6 d-flex justify-content-between px-4"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="w-100 text-center">
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Updating Password...
+                    </div>
+                  ) : (
+                    <>
+                      <span>Reset Password</span>
                       <ArrowRight size={20} />
                     </>
                   )}

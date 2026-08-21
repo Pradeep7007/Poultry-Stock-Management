@@ -163,8 +163,37 @@ const getMe = async (req, res) => {
   }
 };
 
+// @desc    Reset user password
+// @route   POST /api/auth/reset-password
+const resetPassword = async (req, res) => {
+  try {
+    const { username, newPassword } = req.body;
+    if (!username || !newPassword) {
+      return res.status(400).json({ message: 'Username/Email and new password are required.' });
+    }
+
+    const identifier = username.trim().toLowerCase();
+    const user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }]
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with that username or email.' });
+    }
+
+    user.setPassword(newPassword);
+    await user.save();
+
+    res.json({ message: 'Password updated successfully! You can now log in with your new password.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: error.message || 'Server error during password reset.' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getMe
+  getMe,
+  resetPassword
 };
