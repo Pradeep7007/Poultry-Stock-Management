@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -22,16 +23,28 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const HenManagement = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { user } = useAuth();
+  const currentUserName = user?.username || user?.fullName || 'Admin';
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   // Form State
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const getInitialFormData = () => ({
     id: '', name: '', date: new Date().toISOString().split('T')[0],
-    deadToday: '', enteredBy: ''
+    deadToday: '', enteredBy: currentUserName
   });
+
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  useEffect(() => {
+    if (!isEditing && !formData.id) {
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    }
+  }, [currentUserName, isEditing]);
 
   // Tab state (0: Batches, 1: Mortality)
   const [activeTab, setActiveTab] = useState(1);
@@ -58,7 +71,7 @@ const HenManagement = () => {
   const deaths = results[1].data || [];
 
   const handleResetForm = () => {
-    setFormData({ id: '', name: '', date: new Date().toISOString().split('T')[0], deadToday: '', enteredBy: '' });
+    setFormData(getInitialFormData());
     setIsEditing(false);
     setShowForm(false);
   };

@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { KEYS, fetchWorkers } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import { 
   Plus, Search, Users, Briefcase, 
   AlertCircle, Eye, SlidersHorizontal, ArrowUpDown, CheckCircle, CreditCard,
@@ -16,6 +17,8 @@ const WorkerManagement = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
+  const { user } = useAuth();
+  const currentUserName = user?.username || user?.fullName || 'Admin';
 
   // Navigation tab state: 'workers', 'today', 'payments'
   const [activeTab, setActiveTab] = useState('workers');
@@ -48,7 +51,7 @@ const WorkerManagement = () => {
     attendance: 'Present',
     dailyWage: '',
     workDetails: '',
-    createdBy: 'Admin'
+    createdBy: currentUserName
   });
 
   // Make Payment Modal state
@@ -59,7 +62,7 @@ const WorkerManagement = () => {
     amount: '',
     paymentType: 'Cash',
     notes: '',
-    createdBy: 'Admin'
+    createdBy: currentUserName
   });
 
   // Add worker form state
@@ -70,8 +73,14 @@ const WorkerManagement = () => {
     phoneNumber: '',
     address: '',
     notes: '',
-    enteredBy: 'Admin'
+    enteredBy: currentUserName
   });
+
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    setEntryForm(prev => ({ ...prev, createdBy: currentUserName }));
+    setPaymentForm(prev => ({ ...prev, createdBy: currentUserName }));
+  }, [currentUserName]);
 
   // Fetch Workers with stats
   const { data: workers = [], isLoading: isWorkersLoading, isError } = useQuery({

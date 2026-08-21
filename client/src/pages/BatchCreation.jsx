@@ -1,22 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS } from '../services/queries';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import './BatchCreation.css';
 
 const BatchCreation = () => {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
+  const { user } = useAuth();
+  const currentUserName = user?.username || user?.fullName || 'Admin';
+
   const [formData, setFormData] = useState({
     name: '',
     startDate: '',
     endDate: '',
     startedHens: '',
-    enteredBy: ''
+    enteredBy: currentUserName
   });
+
+  useEffect(() => {
+    if (!formData.enteredBy) {
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    }
+  }, [currentUserName]);
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);

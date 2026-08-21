@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchEggs, fetchBatches, fetchHens } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -16,15 +17,27 @@ import { formatDate } from '../utils/dateFormatter';
 const EggManagement = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { user } = useAuth();
+  const currentUserName = user?.username || user?.fullName || 'Admin';
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const getInitialFormData = () => ({
     id: '', name: '', date: new Date().toISOString().split('T')[0],
-    eggsProduced: '', eggsSold: '', damagedEggs: '', eggPrice: '', profitPerEgg: '', enteredBy: ''
+    eggsProduced: '', eggsSold: '', damagedEggs: '', eggPrice: '', profitPerEgg: '', enteredBy: currentUserName
   });
+
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  useEffect(() => {
+    if (!isEditing && !formData.id) {
+      setFormData(prev => ({ ...prev, enteredBy: currentUserName }));
+    }
+  }, [currentUserName, isEditing]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,10 +92,7 @@ const EggManagement = () => {
   const activeBatches = batches.filter(b => b.status === 'Active');
 
   const handleResetForm = () => {
-    setFormData({
-      id: '', name: '', date: new Date().toISOString().split('T')[0],
-      eggsProduced: '', eggsSold: '', damagedEggs: '', eggPrice: '', profitPerEgg: '', enteredBy: ''
-    });
+    setFormData(getInitialFormData());
     setIsEditing(false);
     setShowForm(false);
   };

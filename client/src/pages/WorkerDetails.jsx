@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { KEYS, fetchWorkerById } from '../services/queries';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import { 
   ArrowLeft, Calendar, Briefcase, Phone, MapPin, 
   Plus, Edit2, Trash2, ToggleLeft, ToggleRight,
@@ -17,6 +18,8 @@ const WorkerDetails = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { user } = useAuth();
+  const currentUserName = user?.username || user?.fullName || 'Admin';
 
   // Selected Month/Year Filter (for monthly summary and log views)
   const today = new Date();
@@ -42,12 +45,21 @@ const WorkerDetails = () => {
 
   // Form states
   const [profileForm, setProfileForm] = useState({
-    name: '', jobRole: '', defaultDailyWage: '', phoneNumber: '', address: '', notes: '', status: ''
+    name: '', jobRole: '', defaultDailyWage: '', phoneNumber: '', address: '', notes: '', status: '', enteredBy: currentUserName
   });
 
   const [entryForm, setEntryForm] = useState({
     date: new Date().toISOString().split('T')[0],
     attendance: 'Present',
+    dailyWage: '',
+    workDetails: '',
+    createdBy: currentUserName
+  });
+
+  useEffect(() => {
+    setProfileForm(prev => ({ ...prev, enteredBy: currentUserName }));
+    setEntryForm(prev => ({ ...prev, createdBy: currentUserName }));
+  }, [currentUserName]);
     dailyWage: '',
     workDetails: '',
     createdBy: 'Admin'
